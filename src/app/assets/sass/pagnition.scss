@@ -1,0 +1,147 @@
+.pagination {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2px;
+  cursor: pointer;
+}
+.pagewrapper {
+  display: flex;
+  font-family: sans-serif;
+  margin: 0 auto;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+
+.active {
+  background-color: #1e50ff;
+  border-radius: 50%;
+}
+
+.page-item {
+  list-style: none;
+  padding: 2px 12px;
+  height: 31.5px;
+  width: 31.5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2px;
+}
+
+
+.popup-container {
+  position: fixed;
+  width: 250px;
+  background-color: #f0f0f0;
+  transition: transform 0.3s ease;
+  transform: translateX(0);
+    background-color: white;
+  padding: 20px;
+  z-index: 1000; /* Ensure popup appears above other content */
+  display: none; /* Hide by default */
+  
+}
+
+.popup-content {
+  /* Add styles for the content inside the popup */
+}
+
+.popup-container.active {
+  display: block; /* Show popup when active */
+}
+
+
+.App {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: #f0f0f0;
+  transition: transform 0.3s ease;
+}
+
+.sidebar.open {
+  transform: translateX(0); /* Move sidebar into view when it's open */
+}
+
+.sidebar.closed {
+  transform: translateX(-250px); /* Move sidebar out of view when it's closed */
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+}
+
+.box {
+  border: 1px solid #1c41e9; /* Default border color */
+  border-radius: 3px;
+  padding: 8px;
+  margin: 2px;
+  text-align: center;
+  width: 195px;
+  justify-content: flex-start;
+  align-items: center;
+  display: flex;
+}
+
+.box span {
+  padding: 10px;
+}
+
+
+/* Style the dropdown button */
+.dropbtn { 
+  background-color: white;  
+  border: none;
+}
+
+/* Dropdown container (hidden by default) */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown content */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  width: 130px;
+  box-shadow: 0px 4px 8px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  top: -100%; /* Position the dropdown menu above the table cell */
+  left: 0;
+  border-radius: 10px;
+  border: 1px solid #babbbd; 
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+  color: black;
+  padding: 8px 12px;
+  text-decoration: none;
+  display: block;
+  border-radius: 10px;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {background-color: #f1f1f1;}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {
+  background-color: #fafafa;
+}
+
+

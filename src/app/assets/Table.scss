@@ -1,0 +1,20 @@
+.data-grid-container {
+  height: 500px; /* Set this as needed */
+  overflow: auto; /* Enable scrolling */
+}
+
+.sticky-header {
+  position: sticky;
+  top: 0;
+  background: white; /* Set the background for visibility */
+  z-index: 10; /* Ensure it stays on top */
+}
+
+.sticky-cell {
+  position: relative; /* Change to relative */
+  z-index: 5; /* Ensure it stays below the header */
+}
+
+.data-grid {
+  width: 100%; /* Make sure grid takes full width */
+}

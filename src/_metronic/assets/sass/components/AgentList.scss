@@ -1,0 +1,98 @@
+.action-dropdown .form-select {
+    -webkit-appearance: none; /* For Chrome and Safari */
+    -moz-appearance: none; /* For Firefox */
+    appearance: none; /* Standard syntax */
+    background: transparent; /* Optional: change background to transparent */
+    border: none; /* Optional: set border */
+    padding: 8px; /* Optional: add padding */
+    cursor: pointer; /* Optional: show pointer cursor */
+  }
+
+  
+  
+  // Table container and styling for positioning
+  .table-container {
+    overflow: visible !important;
+    position: relative;
+  }
+  
+  table {
+    z-index: 1;
+    position: relative;
+  }
+  
+  // Responsive media query for smaller screen adjustments
+  @media (max-width: 768px) {
+    .dropdown-menu {
+      min-width: 90px; // Reduce width on small screens
+      font-size: 10px; // Reduce font size for small screens
+    }
+  
+    .dropdown-item {
+      padding: 0.3rem 0.5rem;
+      font-size: 0.8rem;
+    }
+  
+    button {
+      font-size: 0.8rem;
+    }
+  }
+  .pagination {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  
+    .page-item {
+      margin: 0 5px;
+  
+      .page-link {
+        display: inline-block;
+        padding: 8px 12px;
+        color: #007bff;
+        text-decoration: none;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        transition: background-color 0.2s ease;
+  
+        &:hover {
+          background-color: #f0f0f0;
+          text-decoration: none;
+        }
+      }
+  
+      &.active .page-link {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+      }
+    }
+  
+    .previous,
+    .next {
+      .previous-link,
+      .next-link {
+        display: inline-block;
+        padding: 6px 10px; // Adjust padding for smaller arrows
+        color: #007bff;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        font-size: 8px; // Decrease the font size for smaller arrows
+        transition: background-color 0.2s ease;
+  
+        &:hover {
+          background-color: #f0f0f0;
+          text-decoration: none;
+        }
+      }
+    }
+  
+    .previous.disabled .previous-link,
+    .next.disabled .next-link {
+      color: #6c757d;
+      pointer-events: none;
+      background-color: #e9ecef;
+      border-color: #dee2e6;
+    }
+  }
+  
