@@ -18,12 +18,14 @@ const ActivitiesDriverDetails: FC = () => {
   const [errorMsg, setErrorMsg] = useState("");
   const [isFailed, setIsFailed] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [areas, setAreas] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     userName: "",
     dialCode: "",
     mobile: "",
+    areaId: "",
     is_active: true,
     profilePic: "",
   });
@@ -62,8 +64,9 @@ const ActivitiesDriverDetails: FC = () => {
         email: values.email,
         userName: values.name,
         dialCode: values.dialCode,
+        areaId: values.areaId,
         mobile: values.mobile,
-        userType: "adminDriver", 
+        userType: "adminDriver",
         is_active: true,
       };
       const requestData = new FormData();
@@ -90,20 +93,20 @@ const ActivitiesDriverDetails: FC = () => {
             (response) => {
               if (response?.data?.status === "ok") {
                 setIsSuccess(true);
-                setSuccessMsg("Driver has been added successfully");
+                setSuccessMsg(response?.data?.message ||"Driver has been added successfully");
                 setLoading(false);
               } else {
                 setIsFailed(true);
-                setErrorMsg("Something went wrong");
+                setErrorMsg(response?.data?.message || "Something went wrong");
                 setLoading(false);
               }
             }
           );
         }
-      } catch (error) {
+      } catch (error:any) {
         setIsFailed(true);
         setLoading(false);
-        setErrorMsg("Something went wrong");
+     setErrorMsg(error?.response?.data?.message || "Something went wrong");
       }
     },
   });
@@ -120,6 +123,7 @@ const ActivitiesDriverDetails: FC = () => {
           dialCode,
           mobile,
           is_active,
+          areaId,
           profileImg,
         } = parsedData;
         setFormData({
@@ -128,6 +132,7 @@ const ActivitiesDriverDetails: FC = () => {
           userName,
           dialCode,
           mobile,
+          areaId,
           is_active,
           profilePic: profileImg,
         });
@@ -140,6 +145,7 @@ const ActivitiesDriverDetails: FC = () => {
             userName,
             dialCode,
             mobile,
+            areaId,
             is_active,
             profileImg,
           } = driverData?.data?.data[0];
@@ -149,6 +155,7 @@ const ActivitiesDriverDetails: FC = () => {
             userName,
             dialCode,
             mobile,
+            areaId,
             is_active,
             profilePic: profileImg,
           });
@@ -156,9 +163,19 @@ const ActivitiesDriverDetails: FC = () => {
       }
     }
   };
-
+  const getAreas = async () => {
+    try {
+      const response = await postRequest("/master/areas", {});
+      if (response?.data?.status === "ok") {
+        setAreas(response.data.data);
+      }
+    } catch (error) {
+      console.log("Area fetch error", error);
+    }
+  };
   useEffect(() => {
     getData();
+    getAreas();
   }, [driverId]);
 
   const closeAlert = () => {
@@ -288,8 +305,28 @@ const ActivitiesDriverDetails: FC = () => {
                   />
                 </div>
               </div>
+              {/* Area Dropdown */}
+              <div className="row mb-12">
+                <label className="col-lg-4 col-form-label required fw-bold fs-6">
+                  Area
+                </label>
 
-              {/* Display the preview of the image */}
+                <div className="col-lg-8">
+                  <select
+                    {...formik.getFieldProps("areaId")}
+                    className="form-control form-control-lg form-control-solid "
+                   
+                  >
+                    <option value="">Select Area</option>
+
+                    {areas.map((area: any) => (
+                      <option key={area._id} value={area._id}>
+                        {area.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
 
               {/* Dial Code Input */}
               <div className="row mb-12">

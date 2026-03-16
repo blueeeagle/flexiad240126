@@ -5,7 +5,7 @@
     width: 60%;
     margin: auto;
     z-index: 100;
-    border:none;
+    border: none;
     border-radius: 0 0 1rem 1rem;
     left: -15%;
     margin-left: 40%;
@@ -13,11 +13,11 @@
     color: white;
 
     span {
-        padding: 0 0 0 1rem ;
+        padding: 0 0 0 1rem;
         display: inline-block;
     }
 
-    .close{
+    .close {
         text-align: right;
         cursor: pointer;
         color: #fff;
@@ -27,9 +27,11 @@
         color: #fff;
         text-decoration: underline;
     }
-    .icon{
+
+    .icon {
         font-size: 1.5rem;
     }
+
     &.alert-success {
         background: #24ad76;
     }
@@ -40,7 +42,7 @@
 
 
 }
-  
+
 /* The close button */
 .closebtn {
     margin-left: 15px;
@@ -52,7 +54,7 @@
     cursor: pointer;
     transition: 0.3s;
 }
-  
+
 /* When moving the mouse over the close button */
 .closebtn:hover {
     color: black;
@@ -62,11 +64,14 @@
 
 .modal-overlay {
     z-index: 9999;
-    position: fixed; /* changed from absolute to fixed */
+    position: fixed;
+    /* changed from absolute to fixed */
     top: 0;
     left: 0;
-    width: 100%; /* changed from 100vw to 100% */
-    height: 100%; /* changed from 100vh to 100% */
+    width: 100%;
+    /* changed from 100vw to 100% */
+    height: 100%;
+    /* changed from 100vh to 100% */
     background: rgba(0, 0, 0, 0.7);
     display: flex;
     justify-content: center;
@@ -81,15 +86,20 @@
     height: 400px;
     padding: 1rem;
     border-radius: 1rem;
-    z-index: 10000; /* Ensure modal box appears above overlay */
+    z-index: 10000;
+    /* Ensure modal box appears above overlay */
 }
 
-  
+
 
 .no-text-decoration {
     text-decoration: none !important;
-  }
-  
-  .no-text-decoration:hover {
+}
+
+.no-text-decoration:hover {
     text-decoration: none !important;
-  }
+}
+.area-dropdown {
+  max-height: 200px !important;
+  overflow-y: auto !important;
+}
