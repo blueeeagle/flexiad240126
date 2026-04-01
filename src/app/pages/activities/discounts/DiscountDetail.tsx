@@ -9,14 +9,14 @@ import { FormikProps, useFormik } from "formik";
 import * as Yup from "yup";
 import clsx from "clsx";
 import AlertBox from "../../../../common/AlertBox";
-import Select from 'react-select'
+import Select from 'react-select';
 import CountryDropdown from "./CountryDropdown";
+
 interface AgentOption {
   companyName: any;
   _id: any;
   value: string;
-  label: string
-
+  label: string;
 }
 
 interface DiscountData {
@@ -38,7 +38,8 @@ interface DiscountData {
   imgUrl?: string;
   applicableFor: string;
 }
-
+console.log(import.meta.env.VITE_DEFAULT_IMAGE_URL);
+const DEFAULT_IMAGE_URL = import.meta.env.VITE_DEFAULT_IMAGE_URL
 const DiscountDetail: FC = () => {
   const referralSchema = Yup.object().shape({
     postFrom: Yup.string().required("Post from is required"),
@@ -61,48 +62,37 @@ const DiscountDetail: FC = () => {
     usagefrequency: Yup.number()
       .required("Usage Frequency is required")
       .positive("Usage Frequency must be positive"),
-    // flatorpercentage: Yup.string()
-    //   .oneOf(["flat", "percentage"], "Invalid discount type")
-    //   .required("Flat or Percentage is required"),
     flatorpercentage: Yup.string().required("Flat or Percentage is required"),
-
-
     amount: Yup.number()
       .required("Amount is required")
       .positive("Amount must be positive"),
     validityFrom: Yup.date().required("Validity From is required"),
     validityTo: Yup.date().required("Validity To is required"),
-
     sortNo: Yup.number()
       .required("Sort No is required")
       .positive("Sort No must be positive"),
-    imgUrl: Yup.mixed().required("Image is required"),
+    // imgUrl: Yup.mixed().required("Image is required"),
   });
 
   const [loading, setLoading] = useState(false);
- {loading}
   const [isSuccess, setIsSuccess] = useState(false);
   const [successMsg, setSuccessMsg] = useState(``);
   const [errorMsg, setErrorMsg] = useState(``);
-
   const [isFailed, setIsFailed] = useState(false);
   const [countryList, setCountryList] = useState([]);
- {countryList}
   const [agents, setAgents] = useState([]);
   const { discountId } = useParams();
   const [selectedCountry, setSelectedCountry] = useState<string>("6566946881f360c33361e259");
-
-  const fileRef = useRef(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [selectedDiscountData, setSelectedDiscountData] =
-    useState<DiscountData | null>(null);
+  const [selectedDiscountData, setSelectedDiscountData] = useState<DiscountData | null>(null);
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const location = useLocation();
+
   useEffect(() => {
-    console.log("Current location:", location.pathname); // Check the current path
+    console.log("Current location:", location.pathname);
     console.log("Referral ID from URL:", discountId);
   }, [discountId, location.pathname]);
+
   const initialValues = {
     postFrom: "",
     agentId: "",
@@ -118,16 +108,17 @@ const DiscountDetail: FC = () => {
     validityTo: "",
     service: "",
     sortNo: "",
-    imgUrl: "",
+    imgUrl: import.meta.env.VITE_DEFAULT_IMAGE_URL,
     applicableFor: "",
   };
 
   const [formData, setFormData] = useState(initialValues);
-{formData}
+
   const closeAlert = () => {
     if (isSuccess) setIsSuccess(false);
     if (isFailed) setIsFailed(false);
   };
+
   const formatDateString = (dateString: string) => {
     if (!dateString) return "";
     const [day, month, year] = dateString.split("/");
@@ -138,85 +129,84 @@ const DiscountDetail: FC = () => {
     const storedData = JSON.parse(
       localStorage.getItem("selectedDiscountData") || "{}"
     );
-
     if (storedData) {
       setSelectedDiscountData(storedData);
     }
   }, []);
+
   const isCreatePage = location.pathname === "/activities/discount/create";
   const isUpdatePage =
-    location.pathname.startsWith("/activities/discount") && !isCreatePage;
+  location.pathname.startsWith("/activities/discount") && !isCreatePage;
+
   const formik = useFormik({
     initialValues: isCreatePage
       ? {
-        postFrom: "Admin",
-        currencyId: null,
-        agentId: "",
-        promotitle: "",
-        promocode: "",
-        offertype: "",
-        ordervalue: "",
-        noOfCoupons: "",
-        usagefrequency: "",
-        flatorpercentage: "",
-        amount: "",
-        validityFrom: "",
-        validityTo: "",
-        service: [],
-        sortNo: 1,
-        imgUrl: "",
-        applicableFor: "",
-      }
+          postFrom: "Admin",
+          currencyId: null,
+          agentId: "",
+          promotitle: "",
+          promocode: "",
+          offertype: "",
+          ordervalue: "",
+          noOfCoupons: "",
+          usagefrequency: "",
+          flatorpercentage: "",
+          amount: "",
+          validityFrom: "",
+          validityTo: "",
+          service: [],
+          sortNo: 1,
+          imgUrl: "", // non‑empty value to satisfy required validation
+          applicableFor: "",
+        }
       : {
-        postFrom:
-          selectedDiscountData?.postFrom === "Admin"
-            ? "Admin"
-            : "Agent",
-        // agentId: Array.isArray(selectedDiscountData?.companyId)
-        //   ? selectedDiscountData.companyId[0] || ""
-        //   : selectedDiscountData?.companyId || "",
-        agentId: Array.isArray(selectedDiscountData?.companyId)
-          ? selectedDiscountData.companyId.join(",") || ""
-          : selectedDiscountData?.companyId || "",
-        promotitle: selectedDiscountData?.promoTitle || "",
-        promocode: selectedDiscountData?.promoCode || "",
-        offertype:
-          selectedDiscountData?.offerType === "First Time"
-            ? "first_order"
-            : selectedDiscountData?.offerType === "All Orders"
+          postFrom:
+            selectedDiscountData?.postFrom === "Admin"
+              ? "Admin"
+              : "Agent",
+          agentId: Array.isArray(selectedDiscountData?.companyId)
+            ? selectedDiscountData.companyId.join(",") || ""
+            : selectedDiscountData?.companyId || "",
+          promotitle: selectedDiscountData?.promoTitle || "",
+          promocode: selectedDiscountData?.promoCode || "",
+          offertype:
+            selectedDiscountData?.offerType === "First Time"
+              ? "first_order"
+              : selectedDiscountData?.offerType === "All Orders"
               ? "all_orders"
               : "",
-        ordervalue: parseFloat(selectedDiscountData?.orderValue || "") || "",
-        noOfCoupons: selectedDiscountData?.noOfCoupons || "",
-        usagefrequency: selectedDiscountData?.customerUsageLimit || "",
-        flatorpercentage:
-          selectedDiscountData?.discountType === "Percentage"
-            ? "percentage"
-            : "flat",
-        amount:
-          selectedDiscountData?.discountAmt?.toString() ||
-          selectedDiscountData?.discountPercentage?.toString() ||
-          "",
-        validityFrom: selectedDiscountData?.startDate
-          ? formatDateString(selectedDiscountData?.startDate)
-          : "",
-        validityTo: selectedDiscountData?.endDate
-          ? formatDateString(selectedDiscountData?.endDate)
-          : "",
-        service: selectedDiscountData?.serviceId || [],
-        sortNo: selectedDiscountData?.sortNo || "",
-        imgUrl: selectedDiscountData?.imgUrl || "",
-        applicableFor:
-          selectedDiscountData?.applicableFor === "Online"
-            ? "online"
-            : selectedDiscountData?.applicableFor === "POS"
+          ordervalue: parseFloat(selectedDiscountData?.orderValue || "") || "",
+          noOfCoupons: selectedDiscountData?.noOfCoupons || "",
+          usagefrequency: selectedDiscountData?.customerUsageLimit || "",
+          flatorpercentage:
+            selectedDiscountData?.discountType === "Percentage"
+              ? "percentage"
+              : "flat",
+          amount:
+            selectedDiscountData?.discountAmt?.toString() ||
+            selectedDiscountData?.discountPercentage?.toString() ||
+            "",
+          validityFrom: selectedDiscountData?.startDate
+            ? formatDateString(selectedDiscountData?.startDate)
+            : "",
+          validityTo: selectedDiscountData?.endDate
+            ? formatDateString(selectedDiscountData?.endDate)
+            : "",
+          service: selectedDiscountData?.serviceId || [],
+          sortNo: selectedDiscountData?.sortNo || "",
+          imgUrl: selectedDiscountData?.imgUrl || "",
+          applicableFor:
+            selectedDiscountData?.applicableFor === "Online"
+              ? "online"
+              : selectedDiscountData?.applicableFor === "POS"
               ? "pos"
               : "",
-      },
+        },
     enableReinitialize: true,
     validationSchema: referralSchema,
     onSubmit: async (values) => {
       setLoading(true);
+
       const reqBody = {
         postFrom: values.postFrom,
         currencyId: values.currencyId,
@@ -228,10 +218,10 @@ const DiscountDetail: FC = () => {
         noOfCoupons: values.noOfCoupons,
         customerUsageLimit: values.usagefrequency || "",
         discountType:
-          values.flatorpercentage === "Flat" ? "Flat" : "Percentage",
-        discountAmt: values.flatorpercentage === "Flat" ? values.amount : values.amount,
+          values.flatorpercentage === "flat" ? "Flat" : "Percentage",
+        discountAmt: values.flatorpercentage === "flat" ? values.amount : 0,
         discountPercentage:
-          values.flatorpercentage === "Percentage" ? values.amount : 0,
+          values.flatorpercentage === "percentage" ? values.amount : 0,
         startDate: values.validityFrom || "",
         endDate: values.validityTo || "",
         serviceId:
@@ -245,8 +235,23 @@ const DiscountDetail: FC = () => {
 
       const requestData = new FormData();
       requestData.append("data", JSON.stringify(reqBody));
-      if (values.imgUrl && typeof values.imgUrl === "object") {
-        requestData.append("imgUrl", values.imgUrl);
+
+      // For create page: fetch default image and append it as a file
+      if (isCreatePage) {
+        try {
+          const defaultImageFile = await fetchDefaultImageAsFile(DEFAULT_IMAGE_URL);
+          requestData.append("imgUrl", defaultImageFile);
+        } catch (error) {
+          console.error("Failed to fetch default image:", error);
+          setIsFailed(true);
+          setErrorMsg("Failed to load default image");
+          setLoading(false);
+          return;
+        }
+      } else if (isUpdatePage && values.imgUrl && typeof values.imgUrl === "object") {
+        // Only append if a new image file was provided (user selected a file)
+        // Since we removed the file input, this branch will never be taken.
+        // For updates we keep the existing image, so we do nothing here.
       }
 
       try {
@@ -259,7 +264,7 @@ const DiscountDetail: FC = () => {
           if (response?.data?.status === "ok") {
             setIsSuccess(true);
             setSuccessMsg("Discount has been updated successfully");
-            navigate('/activities/discounts')
+            navigate('/activities/discounts');
           } else {
             setIsFailed(true);
             setErrorMsg("Something Went Wrong");
@@ -288,6 +293,17 @@ const DiscountDetail: FC = () => {
     },
   });
 
+  // Helper: fetch an image from a URL and return it as a File object
+  const fetchDefaultImageAsFile = async (url: string): Promise<File> => {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image: ${response.statusText}`);
+    }
+    const blob = await response.blob();
+    // Extract file name from URL or use a default name
+    const fileName = url.split('/').pop() || 'default_image.png';
+    return new File([blob], fileName, { type: blob.type });
+  };
 
   const editData: any = location.state;
 
@@ -331,7 +347,6 @@ const DiscountDetail: FC = () => {
           countryData: d[0]?.data?.status === "ok" ? d[0]?.data?.data : [],
           currencyData: d[1]?.data?.status === "ok" ? d[1]?.data?.data : [],
         };
-        
         setCountryList(dataobj.countryData);
       });
   };
@@ -342,37 +357,12 @@ const DiscountDetail: FC = () => {
     }
     loadData();
   }, []);
-  useEffect(() => {
-    // Retrieve stored image URL from local storage
-    const storedData = localStorage.getItem("selectedDiscountData");
-    if (storedData) {
-      const parsedData = JSON.parse(storedData);
-      setImageUrl(parsedData.imgUrl);
-    }
-  }, []);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files ? event.target.files[0] : null;
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === "string") {
-          // Set the image URL in state (for preview)
-          setImageUrl(reader.result);
-
-          // Update Formik field value for imgUrl (if needed for submission)
-          formik.setFieldValue("imgUrl", file);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
   const handleCountrySelect = (countryId: string) => {
-    setSelectedCountry(countryId)
+    setSelectedCountry(countryId);
   };
 
   const fetchAgents = useCallback(async () => {
-
     try {
       const response = await fetch(
         "https://adminapi.flexiclean.me/api/v1/agent/list",
@@ -387,7 +377,9 @@ const DiscountDetail: FC = () => {
 
       const result = await response.json();
       const filteredData = result?.data?.filter(
-        (item: { addressDetails: { countryId: string; }; }) => item?.addressDetails?.countryId === selectedCountry);
+        (item: { addressDetails: { countryId: string } }) =>
+          item?.addressDetails?.countryId === selectedCountry
+      );
 
       if (result.status === "ok") {
         setAgents(filteredData);
@@ -395,44 +387,45 @@ const DiscountDetail: FC = () => {
     } catch (error) {
       console.error("Error fetching agents:", error);
     }
-  }, [selectedCountry, token])
+  }, [selectedCountry, token]);
 
   useEffect(() => {
-    fetchAgents()
-  }, [fetchAgents])
-
+    fetchAgents();
+  }, [fetchAgents]);
 
   const agentIds = formik.values.agentId ?? [];
-  const companyId = Array.isArray(agentIds) && agentIds.length > 0 ? agentIds[agentIds.length - 1] : "";
+  const companyId =
+    Array.isArray(agentIds) && agentIds.length > 0
+      ? agentIds[agentIds.length - 1]
+      : "";
   const formikRef = useRef<FormikProps<any> | null>(null);
   formikRef.current = formik;
 
   const getService = useCallback(async () => {
     try {
       if (companyId) {
-
-        const response = await fetch(`${import.meta.env.VITE_APP_API_URL}/agent/service/${companyId}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_APP_API_URL}/agent/service/${companyId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (!response.ok) {
           throw new Error(`Error: ${response.statusText}`);
         }
-
         const data = await response.json();
-
-
-
-        // Ensure the 'service' field is an array, and append the new service ID
-        const currentServices = formik.values.service ?? []; // Ensure it defaults to an array
-        const updatedServices = [...currentServices, data.data._id]; // Add new service ID to array
-
-        formikRef.current?.setFieldValue("service", updatedServices); // Update the field
-        formikRef.current?.setFieldValue("currencyId", data?.data?.companyId?.currencyId?._id); // Update the field
+        const currentServices = formik.values.service ?? [];
+        const updatedServices = [...currentServices, data.data._id];
+        formikRef.current?.setFieldValue("service", updatedServices);
+        formikRef.current?.setFieldValue(
+          "currencyId",
+          data?.data?.companyId?.currencyId?._id
+        );
       }
     } catch (e) {
       console.error("Failed to fetch service data", e);
@@ -443,25 +436,16 @@ const DiscountDetail: FC = () => {
     getService();
   }, [getService]);
 
+  const agentOptions = agents.map((agent: AgentOption) => ({
+    value: agent._id,
+    label: agent.companyName,
+  }));
 
-
-  const agentOptions = [
-
-    ...agents.map((agent: AgentOption) => ({
-      value: agent._id,
-      label: agent.companyName,
-    })),
-  ];
-
-  // Set default value in Formik
   useEffect(() => {
     if (!formik.values.agentId.length) {
       formik.setFieldValue("agentId", []);
     }
   }, []);
-
-
-
 
   return (
     <>
@@ -477,6 +461,7 @@ const DiscountDetail: FC = () => {
             noValidate
             id="kt_login_signin_form"
           >
+            {/* Post from */}
             <div className="row mb-12">
               <label className="col-lg-4 col-form-label required fw-bold fs-6">
                 Post from
@@ -509,47 +494,13 @@ const DiscountDetail: FC = () => {
                 )}
               </div>
             </div>
+
+            {/* Agent selection */}
             <div className="row mb-12">
               <label className="col-lg-4 col-form-label required fw-bold fs-6">
                 Choose Agent (If required)
               </label>
               <div className="col-lg-8">
-                {/* <select
-                  {...formik.getFieldProps("agentId")}
-                  value={
-                    typeof formik.values.agentId === "object" &&
-                    formik.values.agentId !== null
-                      ? formik.values.agentId._id
-                      : formik.values.agentId || ""
-                  } // Check if it's an object, then access _id
-                  className={clsx(
-                    "form-control form-control-lg form-control-solid mb-3 mb-lg-0",
-                    {
-                      "is-invalid":
-                        formik.touched.agentId && formik.errors.agentId,
-                    },
-                    {
-                      "is-valid":
-                        formik.touched.agentId && !formik.errors.agentId,
-                    }
-                  )}
-                  multiple
-                >
-                  <option value="">Choose Agent...</option>
-                  {agents && agents.length > 0 ? (
-                    agents.map((agent: any) => (
-                      <option key={agent._id} value={agent._id}>
-                        {agent.companyName}
-                      </option>
-                    ))
-                  ) : (
-                    <option disabled>Loading agents...</option> // Optional loading message
-                  )}
-                </select> */}
-
-
-
-
                 <Select
                   isMulti
                   name="agentId"
@@ -562,22 +513,20 @@ const DiscountDetail: FC = () => {
                       : formik.values.agentId === option.value
                   )}
                   onChange={(selectedOptions) => {
-                    const isAllSelected = selectedOptions.some(option => option.value === "all");
-
+                    const isAllSelected = selectedOptions.some(
+                      (option) => option.value === "all"
+                    );
                     if (isAllSelected) {
                       formik.setFieldValue("agentId", ["all"]);
                     } else {
                       formik.setFieldValue(
                         "agentId",
-                        selectedOptions.map(option => option.value)
+                        selectedOptions.map((option) => option.value)
                       );
                     }
                   }}
                   onBlur={() => formik.setFieldTouched("agentId", true)}
                 />
-
-
-
                 {formik.touched.agentId && formik.errors.agentId && (
                   <div
                     style={{ color: "red" }}
@@ -589,6 +538,7 @@ const DiscountDetail: FC = () => {
               </div>
             </div>
 
+            {/* Promo Title */}
             <div className="row mb-12">
               <label className="col-lg-4 col-form-label required fw-bold fs-6">
                 Promo Title
@@ -620,6 +570,8 @@ const DiscountDetail: FC = () => {
                 )}
               </div>
             </div>
+
+            {/* Promo Code */}
             <div className="row mb-12">
               <label className="col-lg-4 col-form-label required fw-bold fs-6">
                 Promo Code
@@ -651,6 +603,8 @@ const DiscountDetail: FC = () => {
                 )}
               </div>
             </div>
+
+            {/* Offer Type */}
             <div className="row mb-12">
               <label className="col-lg-4 col-form-label required fw-bold fs-6">
                 Offer Type
@@ -684,13 +638,16 @@ const DiscountDetail: FC = () => {
                 )}
               </div>
             </div>
+
+            {/* Order Value */}
             <div className="row mb-12">
               <label className="col-lg-4 col-form-label required fw-bold fs-6">
                 Order Value
               </label>
               <div className="col-lg-8">
                 <input
-                  type="number" min={1}
+                  type="number"
+                  min={1}
                   {...formik.getFieldProps("ordervalue")}
                   className={clsx(
                     "form-control form-control-lg form-control-solid mb-3 mb-lg-0",
@@ -705,7 +662,6 @@ const DiscountDetail: FC = () => {
                   )}
                   placeholder="Enter Order Value"
                 />
-
                 {formik.touched.ordervalue && formik.errors.ordervalue && (
                   <div
                     style={{ color: "red" }}
@@ -716,13 +672,16 @@ const DiscountDetail: FC = () => {
                 )}
               </div>
             </div>
+
+            {/* No Of Coupons */}
             <div className="row mb-12">
               <label className="col-lg-4 col-form-label required fw-bold fs-6">
                 No Of Coupons
               </label>
               <div className="col-lg-8">
                 <input
-                  type="number" min={1}
+                  type="number"
+                  min={1}
                   {...formik.getFieldProps("noOfCoupons")}
                   className={clsx(
                     "form-control form-control-lg form-control-solid mb-3 mb-lg-0",
@@ -748,13 +707,16 @@ const DiscountDetail: FC = () => {
                 )}
               </div>
             </div>
+
+            {/* Usage Frequency */}
             <div className="row mb-12">
               <label className="col-lg-4 col-form-label required fw-bold fs-6">
                 Usage Frequency
               </label>
               <div className="col-lg-8">
                 <input
-                  type="number" min={1}
+                  type="number"
+                  min={1}
                   {...formik.getFieldProps("usagefrequency")}
                   className={clsx(
                     "form-control form-control-lg form-control-solid mb-3 mb-lg-0",
@@ -782,6 +744,8 @@ const DiscountDetail: FC = () => {
                   )}
               </div>
             </div>
+
+            {/* Flat or Percentage */}
             <div className="row mb-12">
               <label className="col-lg-4 col-form-label required fw-bold fs-6">
                 Flat or Percentage
@@ -818,6 +782,8 @@ const DiscountDetail: FC = () => {
                   )}
               </div>
             </div>
+
+            {/* Amount / Percentage */}
             <div className="row mb-12">
               <label className="col-lg-4 col-form-label required fw-bold fs-6">
                 {formik.values.flatorpercentage === 'percentage' ? "Percentage" : "Amount"}
@@ -849,6 +815,8 @@ const DiscountDetail: FC = () => {
                 )}
               </div>
             </div>
+
+            {/* Validity From */}
             <div className="row mb-12">
               <label className="col-lg-4 col-form-label required fw-bold fs-6">
                 Validity From
@@ -883,6 +851,7 @@ const DiscountDetail: FC = () => {
               </div>
             </div>
 
+            {/* Validity To */}
             <div className="row mb-12">
               <label className="col-lg-4 col-form-label required fw-bold fs-6">
                 Validity To
@@ -914,6 +883,8 @@ const DiscountDetail: FC = () => {
                 )}
               </div>
             </div>
+
+            {/* Applicable For */}
             <div className="row mb-12">
               <label className="col-lg-4 col-form-label required fw-bold fs-6">
                 Applicable For
@@ -948,31 +919,12 @@ const DiscountDetail: FC = () => {
                       <span role="alert">{formik.errors.applicableFor}</span>
                     </div>
                   )}
-
-
               </div>
             </div>
+
+            {/* Service field (hidden but error messages shown) */}
             <div className="row mb-12">
-              {/* <label className="col-lg-4 col-form-label required fw-bold fs-6">
-                Service
-              </label> */}
               <div className="col-lg-8">
-                {/* <input
-                  type="text"
-                  {...formik.getFieldProps("service")}
-                  className={clsx(
-                    "form-control form-control-lg form-control-solid mb-3 mb-lg-0",
-                    {
-                      "is-invalid":
-                        formik.touched.service && formik.errors.service,
-                    },
-                    {
-                      "is-valid":
-                        formik.touched.service && !formik.errors.service,
-                    }
-                  )}
-                  placeholder="Enter Service"
-                /> */}
                 {formik.touched.service && formik.errors.service && (
                   <div
                     style={{ color: "red" }}
@@ -980,91 +932,15 @@ const DiscountDetail: FC = () => {
                   >
                     <span role="alert">
                       {Array.isArray(formik.errors.service)
-                        ? formik.errors.service.join(", ") // Join array items if it's an array
-                        : formik.errors.service}{" "}
-                      {/* Directly display the error message if it's a string */}
+                        ? formik.errors.service.join(", ")
+                        : formik.errors.service}
                     </span>
                   </div>
                 )}
               </div>
             </div>
 
-           {/*  <div className="row mb-12">
-              <label className="col-lg-4 col-form-label required fw-bold fs-6">
-                Sort No
-              </label>
-              <div className="col-lg-8">
-                <input
-                  type="number" min={1}
-                  {...formik.getFieldProps("sortNo")}
-                  className={clsx(
-                    "form-control form-control-lg form-control-solid mb-3 mb-lg-0",
-                    {
-                      "is-invalid":
-                        formik.touched.sortNo && formik.errors.sortNo,
-                    },
-                    {
-                      "is-valid":
-                        formik.touched.sortNo && !formik.errors.sortNo,
-                    }
-                  )}
-                  placeholder="Enter Sort Number"
-                />
-                {formik.touched.sortNo && formik.errors.sortNo && (
-                  <div
-                    style={{ color: "red" }}
-                    className="fv-plugins-message-container"
-                  >
-                    <span role="alert">{formik.errors.sortNo}</span>
-                  </div>
-                )}
-              </div>
-            </div>*/}
-            <div className="row mb-12">
-              {!isCreatePage && imageUrl && (
-                <div className="row">
-                  <label className="col-lg-4 col-form-label fw-bold fs-6">
-                    Preview Image
-                  </label>
-                  <div className="col-lg-8 mb-3">
-                    <img
-                      src={`http://adminapi.flexiclean.me/${imageUrl}`}
-                      alt="Uploaded Preview"
-                      style={{ maxWidth: "100%", height: "150px" }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              <label className="col-lg-4 col-form-label required fw-bold fs-6">
-                Upload Image
-              </label>
-              <div className="col-lg-8">
-                <input
-                  type="file"
-                  ref={fileRef}
-                  onChange={handleFileChange} // handle file selection
-                  className={clsx(
-                    "form-control form-control-lg form-control-solid mb-3 mb-lg-0",
-                    {
-                      "is-invalid": formik.touched.imgUrl && formik.errors.imgUrl,
-                    },
-                    {
-                      "is-valid": formik.touched.imgUrl && !formik.errors.imgUrl,
-                    }
-                  )}
-                />
-
-                <div style={{ color: "red" }} className="fv-plugins-message-container">
-                  <span role="alert">
-                    {formik.touched.imgUrl && formik.errors.imgUrl}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-
-
+            {/* Submit button */}
             <div className="row mb-12">
               <div className="col-lg-12 d-flex align-items-center justify-content-end">
                 <button type="submit" className="btn btn-primary me-2">
