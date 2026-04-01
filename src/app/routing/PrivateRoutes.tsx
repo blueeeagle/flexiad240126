@@ -77,7 +77,6 @@ import DiscountTransactions from "../pages/reports/DiscountTransactions";
 import ActivityLog from "../pages/reports/ActivityLog";
 import MCreditTransactions from "../pages/reports/MCreditTransactions";
 import Logistics from "../pages/Logistics/Logistics";
-
 import { getCSSVariableValue } from "../../_metronic/assets/ts/_utils";
 import { WithChildren } from "../../_metronic/helpers";
 import BuilderPageWrapper from "../pages/layout-builder/BuilderPageWrapper";

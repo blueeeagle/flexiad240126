@@ -149,8 +149,8 @@ const DiscountDetail: FC = () => {
   const formik = useFormik({
     initialValues: isCreatePage
       ? {
-        postFrom: "",
-        currencyId: "",
+        postFrom: "Admin",
+        currencyId: null,
         agentId: "",
         promotitle: "",
         promocode: "",
@@ -163,7 +163,7 @@ const DiscountDetail: FC = () => {
         validityFrom: "",
         validityTo: "",
         service: [],
-        sortNo: "",
+        sortNo: 1,
         imgUrl: "",
         applicableFor: "",
       }
@@ -239,7 +239,7 @@ const DiscountDetail: FC = () => {
             ? values.service
             : [],
         applicableFor: values.applicableFor === "online" ? "Online" : "POS",
-        sortNo: values.sortNo,
+        sortNo: 1,
         imgUrl: values.imgUrl,
       };
 
@@ -456,7 +456,7 @@ const DiscountDetail: FC = () => {
   // Set default value in Formik
   useEffect(() => {
     if (!formik.values.agentId.length) {
-      formik.setFieldValue("agentId", ["all"]);
+      formik.setFieldValue("agentId", []);
     }
   }, []);
 
@@ -989,7 +989,7 @@ const DiscountDetail: FC = () => {
               </div>
             </div>
 
-            <div className="row mb-12">
+           {/*  <div className="row mb-12">
               <label className="col-lg-4 col-form-label required fw-bold fs-6">
                 Sort No
               </label>
@@ -1019,7 +1019,7 @@ const DiscountDetail: FC = () => {
                   </div>
                 )}
               </div>
-            </div>
+            </div>*/}
             <div className="row mb-12">
               {!isCreatePage && imageUrl && (
                 <div className="row">

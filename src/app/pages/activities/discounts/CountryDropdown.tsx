@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-
+import loaderAnimation from "../../../../_metronic/assets/sass/components/Animation - 1716715571159.json";
+import Lottie from "lottie-react";
 interface Country {
   _id: string;
   name: string;
@@ -14,6 +15,7 @@ const CountryDropdown: React.FC<CountryDropdownProps> = ({ onCountrySelect }) =>
   const [selectedCountryId, setSelectedCountryId] = useState<string>("6566946881f360c33361e259");
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const [isSelecting, setIsSelecting] = useState(false);
 
   const fetchCountryList = useCallback(async () => {
     try {
@@ -49,13 +51,17 @@ const CountryDropdown: React.FC<CountryDropdownProps> = ({ onCountrySelect }) =>
     fetchCountryList();
   }, [fetchCountryList]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedId = e.target.value;
-    setSelectedCountryId(selectedId);
-    onCountrySelect(selectedId);
-   
-    
-  };
+const handleChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const selectedId = e.target.value;
+  setSelectedCountryId(selectedId);
+  setIsSelecting(true);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  try {
+    await onCountrySelect(selectedId);
+  } finally {
+    setIsSelecting(false);
+  }
+};
 
   return (
     <div className="mb-3">
@@ -76,7 +82,28 @@ const CountryDropdown: React.FC<CountryDropdownProps> = ({ onCountrySelect }) =>
           </option>
         ))}
       </select>
-      {loading && <div className="form-text text-primary">Loading countries...</div>}
+      {(loading || isSelecting) && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100vh",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+            background: "rgba(255,255,255,0.6)",
+          }}
+        >
+          <Lottie
+            animationData={loaderAnimation}
+            loop
+            style={{ width: 150, height: 150 }}
+          />
+        </div>
+      )}
       {error && <div className="form-text text-danger">Error: {error}</div>}
     </div>
   );
