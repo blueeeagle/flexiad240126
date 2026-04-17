@@ -114,6 +114,7 @@ const LocationChargesModel: FC<LocationChargesModelProps> = ({
                     <div className="col-lg-12 fv-row">
                       <input
                         type="number"
+                           onWheel={(e) => (e.target as HTMLInputElement).blur()}
                         className={`form-control form-control-lg form-control-solid mb-3 mb-lg-0 ${
                           formik.touched.minOrderAmt &&
                           formik.errors.minOrderAmt
@@ -189,6 +190,7 @@ const LocationChargesModel: FC<LocationChargesModelProps> = ({
                     <div className="col-lg-12 fv-row">
                       <input
                         type="number"
+                           onWheel={(e) => (e.target as HTMLInputElement).blur()}
                         className={`form-control form-control-lg form-control-solid mb-3 mb-lg-0 ${
                           formik.touched.deliveryCharge &&
                           formik.errors.deliveryCharge

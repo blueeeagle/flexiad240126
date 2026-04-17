@@ -332,6 +332,7 @@ const AgentPayOut: FC = () => {
                 <Form.Label>Amount</Form.Label>
                 <Form.Control
                   type="number"
+                     onWheel={(e) => (e.target as HTMLInputElement).blur()}
                   value={selectedTransaction.amount}
                   onChange={(e) =>
                     setSelectedTransaction({

@@ -152,7 +152,7 @@ import { useFormik } from "formik";
 import { login } from "../core/_requests";
 import { toAbsoluteUrl } from "../../../../_metronic/helpers";
 import { useAuth } from "../core/Auth";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const loginSchema = Yup.object().shape({
   email: Yup.string()
@@ -182,7 +182,7 @@ export function Login() {
     onSubmit: async (values, { setStatus, setSubmitting }) => {
       setLoading(true);
 
-     
+
 
       try {
         const { data: auth } = await login(values.email, values.password);
@@ -272,7 +272,11 @@ export function Login() {
           </div>
         )}
       </div>
-
+      <div className="d-grid mb-3">
+        <Link to="/auth/forgot-password" className="link-primary fs-6 fw-bolder">
+          Forgot Password?
+        </Link>
+      </div>
       <div className="d-grid mb-10">
         <button
           type="submit"

@@ -304,6 +304,7 @@ const UpdatePayment: FC = () => {
                       <input
                         {...formik.getFieldProps("amount")}
                         type="number"
+                           onWheel={(e) => (e.target as HTMLInputElement).blur()}
                         className={clsx(
                           "form-control form-control-lg form-control-solid mb-3 mb-lg-0",
                           {

@@ -647,6 +647,7 @@ const DiscountDetail: FC = () => {
               <div className="col-lg-8">
                 <input
                   type="number"
+                      onWheel={(e) => (e.target as HTMLInputElement).blur()}
                   min={1}
                   {...formik.getFieldProps("ordervalue")}
                   className={clsx(
@@ -681,6 +682,7 @@ const DiscountDetail: FC = () => {
               <div className="col-lg-8">
                 <input
                   type="number"
+                      onWheel={(e) => (e.target as HTMLInputElement).blur()}
                   min={1}
                   {...formik.getFieldProps("noOfCoupons")}
                   className={clsx(
@@ -716,6 +718,7 @@ const DiscountDetail: FC = () => {
               <div className="col-lg-8">
                 <input
                   type="number"
+                      onWheel={(e) => (e.target as HTMLInputElement).blur()}
                   min={1}
                   {...formik.getFieldProps("usagefrequency")}
                   className={clsx(
@@ -791,6 +794,7 @@ const DiscountDetail: FC = () => {
               <div className="col-lg-8">
                 <input
                   type="number"
+                  onWheel={(e) => (e.target as HTMLInputElement).blur()}
                   {...formik.getFieldProps("amount")}
                   className={clsx(
                     "form-control form-control-lg form-control-solid mb-3 mb-lg-0",
@@ -803,6 +807,7 @@ const DiscountDetail: FC = () => {
                         formik.touched.amount && !formik.errors.amount,
                     }
                   )}
+               
                   placeholder={`Enter ${formik.values.flatorpercentage === 'percentage' ? "Percentage" : "Amount"}`}
                 />
                 {formik.touched.amount && formik.errors.amount && (
@@ -885,42 +890,39 @@ const DiscountDetail: FC = () => {
             </div>
 
             {/* Applicable For */}
-            <div className="row mb-12">
-              <label className="col-lg-4 col-form-label required fw-bold fs-6">
-                Applicable For
-              </label>
-              <div className="col-lg-8">
-                <select
-                  {...formik.getFieldProps("applicableFor")}
-                  className={clsx(
-                    "form-control form-control-lg form-control-solid mb-3 mb-lg-0",
-                    {
-                      "is-invalid":
-                        formik.touched.applicableFor &&
-                        formik.errors.applicableFor,
-                    },
-                    {
-                      "is-valid":
-                        formik.touched.applicableFor &&
-                        !formik.errors.applicableFor,
-                    }
-                  )}
-                >
-                  <option value="">Select Option</option>
-                  <option value="POS">POS</option>
-                  <option value="ONLINE">ONLINE</option>
-                </select>
-                {formik.touched.applicableFor &&
-                  formik.errors.applicableFor && (
-                    <div
-                      style={{ color: "red" }}
-                      className="fv-plugins-message-container"
-                    >
-                      <span role="alert">{formik.errors.applicableFor}</span>
-                    </div>
-                  )}
-              </div>
-            </div>
+         <div className="row mb-12">
+  <label className="col-lg-4 col-form-label required fw-bold fs-6">
+    Applicable For
+  </label>
+  <div className="col-lg-8">
+    <select
+      {...formik.getFieldProps("applicableFor")}
+      className={clsx(
+        "form-control form-control-lg form-control-solid mb-3 mb-lg-0",
+        {
+          "is-invalid":
+            formik.touched.applicableFor && formik.errors.applicableFor,
+        },
+        {
+          "is-valid":
+            formik.touched.applicableFor && !formik.errors.applicableFor,
+        }
+      )}
+    >
+      <option value="">Select Option</option>
+      <option value="pos">POS</option>
+      <option value="online">ONLINE</option>
+    </select>
+    {formik.touched.applicableFor && formik.errors.applicableFor && (
+      <div
+        style={{ color: "red" }}
+        className="fv-plugins-message-container"
+      >
+        <span role="alert">{formik.errors.applicableFor}</span>
+      </div>
+    )}
+  </div>
+</div>
 
             {/* Service field (hidden but error messages shown) */}
             <div className="row mb-12">

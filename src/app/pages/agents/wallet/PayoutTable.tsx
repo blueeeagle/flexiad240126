@@ -207,6 +207,7 @@ const PayoutTable: React.FC = () => {
                 <Form.Label>Enter The Amount</Form.Label>
                 <Form.Control
                   type="number"
+                     onWheel={(e) => (e.target as HTMLInputElement).blur()}
                   value={selectedPayout.amount}
                   onChange={(e) =>
                     setSelectedPayout({

@@ -551,6 +551,7 @@ const ServiceDetail: FC = () => {
                   <div className="col-lg-8">
                     <input
                       type="number"
+                         onWheel={(e) => (e.target as HTMLInputElement).blur()}
                       {...formik.getFieldProps("orderNo")}
                       className={clsx(
                         "form-control form-control-lg form-control-solid",

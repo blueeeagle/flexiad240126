@@ -1,131 +1,158 @@
-import {useState} from 'react'
+import { useState } from 'react'
 import * as Yup from 'yup'
 import clsx from 'clsx'
-import {Link} from 'react-router-dom'
-import {useFormik} from 'formik'
-import {requestPassword} from '../core/_requests'
-
-const initialValues = {
-  email: 'admin@demo.com',
-}
-
-const forgotPasswordSchema = Yup.object().shape({
-  email: Yup.string()
-    .email('Wrong email format')
-    .min(3, 'Minimum 3 symbols')
-    .max(50, 'Maximum 50 symbols')
-    .required('Email is required'),
-})
+import { Link, useNavigate } from 'react-router-dom'
+import { useFormik } from 'formik'
+import { requestPassword, verificationCode } from '../core/_requests'
 
 export function ForgotPassword() {
   const [loading, setLoading] = useState(false)
   const [hasErrors, setHasErrors] = useState<boolean | undefined>(undefined)
+  const [showOtp, setShowOtp] = useState(false)
+  const [otpSuccess, setOtpSuccess] = useState(false)
+  const [emailSuccess, setEmailSuccess] = useState(false)
+
+  const navigate = useNavigate()
+
   const formik = useFormik({
-    initialValues,
-    validationSchema: forgotPasswordSchema,
-    onSubmit: (values, {setStatus, setSubmitting}) => {
+    initialValues: {
+      email: '',
+      otp: '',
+    },
+    validationSchema: showOtp
+      ? Yup.object({
+          otp: Yup.string().required('OTP is required'),
+        })
+      : Yup.object({
+          email: Yup.string()
+            .email('Wrong email format')
+            .required('Email is required'),
+        }),
+
+    onSubmit: async (values, { setSubmitting, setStatus }) => {
       setLoading(true)
+
+      // 🔥 Reset states before new action
       setHasErrors(undefined)
-      setTimeout(() => {
-        requestPassword(values.email)
-          .then(() => {
-            setHasErrors(false)
-            setLoading(false)
-          })
-          .catch(() => {
-            setHasErrors(true)
-            setLoading(false)
-            setSubmitting(false)
-            setStatus('The login detail is incorrect')
-          })
-      }, 1000)
+      setEmailSuccess(false)
+      setOtpSuccess(false)
+
+      try {
+        if (!showOtp) {
+          // ✅ STEP 1: Send Email
+          await requestPassword(values.email)
+
+          setEmailSuccess(true)
+          setShowOtp(true)
+          setHasErrors(false)
+        } else {
+          // ✅ STEP 2: Verify OTP
+          await verificationCode(values.otp)
+
+          setOtpSuccess(true)
+          setHasErrors(false)
+
+          // ✅ Navigate after showing success
+          setTimeout(() => {
+            navigate('/auth/change-password')
+          }, 2000)
+        }
+      } catch (err) {
+        setHasErrors(true)
+        setStatus('Something went wrong')
+      }
+
+      setLoading(false)
+      setSubmitting(false)
     },
   })
 
   return (
-    <form
-      className='form w-100 fv-plugins-bootstrap5 fv-plugins-framework'
-      noValidate
-      id='kt_login_password_reset_form'
-      onSubmit={formik.handleSubmit}
-    >
+    <form onSubmit={formik.handleSubmit} className='form w-100'>
       <div className='text-center mb-10'>
-        {/* begin::Title */}
-        <h1 className='text-gray-900 fw-bolder mb-3'>Forgot Password ?</h1>
-        {/* end::Title */}
-
-        {/* begin::Link */}
-        <div className='text-gray-500 fw-semibold fs-6'>
-          Enter your email to reset your password.
+        <h1 className='fw-bolder mb-3'>Forgot Password ?</h1>
+        <div className='text-gray-500'>
+          {!showOtp
+            ? 'Enter your email to reset your password.'
+            : 'Enter the OTP sent to your email.'}
         </div>
-        {/* end::Link */}
       </div>
 
-      {/* begin::Title */}
-      {hasErrors === true && (
-        <div className='mb-lg-15 alert alert-danger'>
-          <div className='alert-text font-weight-bold'>
-            Sorry, looks like there are some errors detected, please try again.
-          </div>
+      {/* ❌ ERROR MESSAGE */}
+      {hasErrors && (
+        <div className='alert alert-danger'>
+          Something went wrong. Please try again.
         </div>
       )}
 
-      {hasErrors === false && (
-        <div className='mb-10 bg-light-info p-8 rounded'>
-          <div className='text-info'>Sent password reset. Please check your email</div>
+      {/* ✅ EMAIL SUCCESS */}
+      {emailSuccess && !otpSuccess && (
+        <div className='alert alert-success'>
+          Email sent successfully ✅
         </div>
       )}
-      {/* end::Title */}
 
-      {/* begin::Form group */}
-      <div className='fv-row mb-8'>
-        <label className='form-label fw-bolder text-gray-900 fs-6'>Email</label>
-        <input
-          type='email'
-          placeholder=''
-          autoComplete='off'
-          {...formik.getFieldProps('email')}
-          className={clsx(
-            'form-control bg-transparent',
-            {'is-invalid': formik.touched.email && formik.errors.email},
-            {
+      {/* ✅ OTP SUCCESS */}
+      {otpSuccess && (
+        <div className='alert alert-success'>
+          OTP verified successfully ✅ Redirecting...
+        </div>
+      )}
+
+      {/* 📧 EMAIL FIELD */}
+      {!showOtp && (
+        <div className='mb-8'>
+          <label>Email</label>
+          <input
+            type='email'
+            {...formik.getFieldProps('email')}
+            className={clsx('form-control', {
+              'is-invalid': formik.touched.email && formik.errors.email,
               'is-valid': formik.touched.email && !formik.errors.email,
-            }
+            })}
+          />
+          {formik.touched.email && formik.errors.email && (
+            <div className='text-danger'>{formik.errors.email}</div>
           )}
-        />
-        {formik.touched.email && formik.errors.email && (
-          <div className='fv-plugins-message-container'>
-            <div className='fv-help-block'>
-              <span role='alert'>{formik.errors.email}</span>
-            </div>
-          </div>
-        )}
-      </div>
-      {/* end::Form group */}
+        </div>
+      )}
 
-      {/* begin::Form group */}
-      <div className='d-flex flex-wrap justify-content-center pb-lg-0'>
-        <button type='submit' id='kt_password_reset_submit' className='btn btn-primary me-4'>
-          <span className='indicator-label'>Submit</span>
-          {loading && (
-            <span className='indicator-progress'>
-              Please wait...
-              <span className='spinner-border spinner-border-sm align-middle ms-2'></span>
-            </span>
+      {/* 🔐 OTP FIELD */}
+      {showOtp && !otpSuccess && (
+        <div className='mb-8'>
+          <label>Enter OTP</label>
+          <input
+            type='text'
+            {...formik.getFieldProps('otp')}
+            className={clsx('form-control', {
+              'is-invalid': formik.touched.otp && formik.errors.otp,
+              'is-valid': formik.touched.otp && !formik.errors.otp,
+            })}
+          />
+          {formik.touched.otp && formik.errors.otp && (
+            <div className='text-danger'>{formik.errors.otp}</div>
           )}
-        </button>
-        <Link to='/auth/login'>
-          <button
-            type='button'
-            id='kt_login_password_reset_form_cancel_button'
-            className='btn btn-light'
-            disabled={formik.isSubmitting || !formik.isValid}
-          >
-            Cancel
+        </div>
+      )}
+
+      {/* 🔘 BUTTONS */}
+      {!otpSuccess && (
+        <div className='text-center'>
+          <button type='submit' className='btn btn-primary me-4'>
+            {loading
+              ? 'Please wait...'
+              : showOtp
+              ? 'Verify OTP'
+              : 'Send OTP'}
           </button>
-        </Link>{' '}
-      </div>
-      {/* end::Form group */}
+
+          <Link to='/auth/login'>
+            <button type='button' className='btn btn-light'>
+              Cancel
+            </button>
+          </Link>
+        </div>
+      )}
     </form>
   )
 }

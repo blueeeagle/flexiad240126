@@ -5,9 +5,10 @@ const API_URL = import.meta.env.VITE_APP_API_URL;
 
 export const GET_USER_BY_ACCESSTOKEN_URL = `${API_URL}/verify_token`;
 export const LOGIN_URL = `${API_URL}/login`;
+export const CHANGE_PASSWORD_URL = `${API_URL}/forgetPwd/changePassword`;
 export const REGISTER_URL = `${API_URL}/register`;
-export const REQUEST_PASSWORD_URL = `${API_URL}/forgot_password`;
-
+export const REQUEST_PASSWORD_URL = `${API_URL}/me/forgot`;
+export const VERIFICATION_CODE_URL = `${API_URL}/otpVerify`;
 // Server should return AuthModel
 export function login(email: string, password: string) {
   return axios.post<AuthModel>(LOGIN_URL, {
@@ -17,7 +18,14 @@ export function login(email: string, password: string) {
     return response;
   });
 }
-
+export function changePassword(email: string, password: string) {
+  return axios.post<AuthModel>(CHANGE_PASSWORD_URL, {
+    email,
+    password,
+  }).then((response: any) => {
+    return response;
+  });
+}
 // Server should return AuthModel
 export function register(
   email: string,
@@ -39,6 +47,11 @@ export function register(
 export function requestPassword(email: string) {
   return axios.post<{ result: boolean }>(REQUEST_PASSWORD_URL, {
     email,
+  });
+}
+export function verificationCode(verificationCode: string) {
+  return axios.post<{ result: boolean }>(VERIFICATION_CODE_URL, {
+    verificationCode,
   });
 }
 

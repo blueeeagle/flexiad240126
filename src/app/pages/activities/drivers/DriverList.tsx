@@ -244,6 +244,10 @@ interface User {
     _id: string;
     name: string;
   };
+  areaId?: {
+    _id: string;
+    name: string;
+  };
 }
 
 interface HandleChangeStatusProps {
@@ -404,7 +408,12 @@ const ActivitiesDriverList: FC = () => {
       width: 150,
       renderCell: (params) => `${params.row.dialCode} ${params.row.mobile}`,
     },
-
+    {
+      field: "area",
+      headerName: "Area",
+      width: 150,
+      renderCell: (params) => params.row.areaId?.name || "-",
+    },
     {
       field: "updated_at",
       headerName: "Created At",
@@ -412,6 +421,7 @@ const ActivitiesDriverList: FC = () => {
       renderCell: (params) =>
         format(new Date(params.row.updated_at), "dd/MM/yyyy"),
     },
+
     {
       field: "is_active",
       headerName: "Status",
