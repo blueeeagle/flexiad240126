@@ -1,92 +1,215 @@
-// import { FC } from "react";
+// import { FC, useEffect, useState } from "react";
 // import { PageTitle } from "../../../../_metronic/layout/core";
 // import { KTIcon } from "../../../../_metronic/helpers";
-// import { toAbsoluteUrl } from "../../../../_metronic/helpers";
-// import { Link } from "react-router-dom";
+// import { Link, useNavigate } from "react-router-dom";
+// import { DataGrid, GridColDef } from "@mui/x-data-grid";
+// import { Switch } from "@mui/material";
+// import Lottie from "lottie-react";
+// import logo from "../../../../../src/_metronic/assets/sass/components/logoimage/logo.png";
+// import loaderAnimation from "../../../../_metronic/assets/sass/components/Animation - 1716715571159.json";
+
 
 // const AdminUserList: FC = () => {
+//   const [rows, setRows] = useState<any[]>([]);
+//   const [loading, setLoading] = useState<boolean>(true);
+//   const token = localStorage.getItem("token");
+//   const navigate = useNavigate();
+
+//   // Fetch Users
+//   useEffect(() => {
+//     const fetchUsers = async () => {
+//       setLoading(true);
+//       try {
+//         const response = await fetch(
+//           "https://adminapi.flexiclean.me/api/v1/admin/users",
+//           {
+//             method: "POST",
+//             headers: {
+//               Authorization: `Bearer ${token}`,
+//               "Content-Type": "application/json",
+//             },
+//             body: JSON.stringify({}),
+//           }
+//         );
+
+//         if (response.ok) {
+//           const data = await response.json();
+
+//           const usersData = data.data.map((user: any, index: number) => ({
+//             id: user._id || index,
+//             profilePicture: user.profileImg
+//               ? `https://adminapi.flexiclean.me/${user.profileImg}`
+//               : logo,
+//             name: user.name || "N/A",
+//             email: user.email || "N/A",
+//             role: user.role?.roleName || "N/A",
+//             mobile: user.mobile || "N/A",
+//             lastUpdated: user.updated_at
+//               ? new Date(user.updated_at).toLocaleDateString()
+//               : "N/A",
+//             isActive: user.is_active,
+//             // also store full user object for edit (if needed)
+//             fullUser: user,
+//           }));
+
+//           setRows(usersData);
+//         } else {
+//           console.error("Failed to fetch users");
+//         }
+//       } catch (error) {
+//         console.error("Error fetching users:", error);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchUsers();
+//   }, [token]);
+
+//   // Status Toggle Handler
+//   const handleChangeStatus = async (id: string, currentStatus: boolean) => {
+//     try {
+//       const response = await fetch(
+//         `https://adminapi.flexiclean.me/api/v1/admin/users/${id}`,
+//         {
+//           method: "PATCH",
+//           headers: {
+//             Authorization: `Bearer ${token}`,
+//             "Content-Type": "application/json",
+//           },
+//           body: JSON.stringify({
+//             is_active: !currentStatus,
+//           }),
+//         }
+//       );
+
+//       if (response.ok) {
+//         setRows((prev) =>
+//           prev.map((row) =>
+//             row.id === id ? { ...row, isActive: !currentStatus } : row
+//           )
+//         );
+//       } else {
+//         console.error("Status update failed");
+//       }
+//     } catch (error) {
+//       console.error("Error updating status:", error);
+//     }
+//   };
+
+//   // Columns definition
+//   const columns: GridColDef[] = [
+//     {
+//       field: "profilePicture",
+//       headerName: "Profile",
+//       width: 100,
+//       renderCell: (params: any) => (
+//         <img
+//           src={params.value}
+//           alt="Profile"
+//           style={{ width: "40px", borderRadius: "50%" }}
+//         />
+//       ),
+//     },
+//     { field: "name", headerName: "Name", width: 180 },
+//     { field: "email", headerName: "Email", width: 200 },
+//     { field: "role", headerName: "Role", width: 150 },
+//     { field: "mobile", headerName: "Mobile", width: 150 },
+//     { field: "lastUpdated", headerName: "Updated", width: 150 },
+//     {
+//       field: "status",
+//       headerName: "Status",
+//       width: 120,
+//       renderCell: (params: any) => (
+//         <Switch
+//           checked={params.row.isActive}
+//           onChange={() => handleChangeStatus(params.row.id, params.row.isActive)}
+//         />
+//       ),
+//     },
+//     {
+//       field: "actions",
+//       headerName: "Actions",
+//       width: 100,
+//       renderCell: (params: any) => (
+//         <select
+//           className="form-select"
+//           defaultValue=""
+//           onChange={(e) => {
+//             if (e.target.value === "edit") {
+//               // Pass full user data to edit page
+//               navigate(`/adminUsers/edit/${params.row.id}`, {
+//                 state: { user: params.row.fullUser },
+//               });
+//             }
+//           }}
+//         >
+//           <option value="" disabled>...</option>
+//           <option value="edit">Edit</option>
+//         </select>
+//       ),
+//     },
+//   ];
+
 //   return (
 //     <>
 //       <PageTitle>Admin Users</PageTitle>
 //       <div className="row g-5 g-xl-8">
-//         <div className={`card `}>
+//         <div className="card">
 //           <div className="card-header border-0 pt-5">
-//             <h3 className="card-title align-items-start flex-column">
-//               <span className="card-label fw-bold fs-3 mb-1">User List</span>
-//             </h3>
-//             <div
-//               className="card-toolbar"
-//               data-bs-toggle="tooltip"
-//               data-bs-placement="top"
-//               data-bs-trigger="hover"
-//               title="Click to add a user"
-//             >
-//               <Link
-//                 to={`/adminUsers/create`}
-//                 className="btn btn-sm btn-light-primary"
-//               >
+//             <h3 className="card-title fw-bold fs-3">User List</h3>
+//             <div className="card-toolbar">
+//               <Link to="/adminUsers/create" className="btn btn-sm btn-light-primary">
 //                 <KTIcon iconName="plus" className="fs-3" />
 //                 New User
 //               </Link>
 //             </div>
 //           </div>
 //           <div className="card-body py-3">
-//             <div className="table-responsive">
-//               <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4">
-//                 <thead>
-//                   <tr className="fw-bold text-muted">
-//                     <th className="min-w-100px">Profile Picture</th>
-//                     <th className="min-w-100px">First & Last Name</th>
-//                     <th className="min-w-200px">Email ID</th>
-//                     <th className="min-w-100px">Username</th>
-//                     <th className="min-w-100px">Role</th>
-//                     <th className="min-w-100px">Mobile Number</th>
-//                     <th className="min-w-200px">Last Updated On</th>
-//                     <th className="min-w-100px">Status</th>
-//                     <th className="min-w-100px text-end">Actions</th>
-//                   </tr>
-//                 </thead>
-//                 <tbody>
-//                   <tr>
-//                     <td>
-//                       <div className="d-flex align-items-center">
-//                         <div className="symbol symbol-45px me-5">
-//                           <img
-//                             src={toAbsoluteUrl(
-//                               "media/avatars/header-logo.jpeg"
-//                             )}
-//                             alt=""
-//                           />
-//                         </div>
-//                       </div>
-//                     </td>
-//                     <td>Imran Malik</td>
-//                     <td>imaran@gmail.com</td>
-//                     <td>Imaran</td>
-//                     <td>Accountant</td>
-//                     <td>Mobile</td>
-//                     <td>12/01/23</td>
-//                     <td>Active</td>
-//                     <td>
-//                       <div className="d-flex justify-content-end flex-shrink-0">
-//                         <Link
-//                           to={"/adminUsers/1234"}
-//                           className="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1"
-//                         >
-//                           <KTIcon iconName="pencil" className="fs-3" />
-//                         </Link>
-//                         <Link
-//                           to={"/"}
-//                           className="btn btn-icon btn-bg-light btn-active-color-primary btn-sm"
-//                         >
-//                           <KTIcon iconName="trash" className="fs-3" />
-//                         </Link>
-//                       </div>
-//                     </td>
-//                   </tr>
-//                 </tbody>
-//               </table>
-//             </div>
+//             {loading ? (
+//               <div
+//                 className="text-center"
+//                 style={{
+//                   display: "flex",
+//                   justifyContent: "center",
+//                   alignItems: "center",
+//                   height: "50vh",
+//                 }}
+//               >
+//                 <Lottie
+//                   animationData={loaderAnimation}
+//                   loop={true}
+//                   style={{
+//                     width: 150,
+//                     height: 150,
+//                     filter: "hue-rotate(200deg)",
+//                   }}
+//                 />
+//               </div>
+//             ) : (
+//               <DataGrid
+//                 rows={rows}
+//                 columns={columns}
+//                 autoHeight
+//                 hideFooter
+//                 sx={{
+//                   "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus": {
+//                     outline: "none",
+//                     border: "none",
+//                     backgroundColor: "transparent",
+//                   },
+//                   "& .MuiDataGrid-columnHeader:focus-visible, & .MuiDataGrid-cell:focus-visible": {
+//                     outline: "none",
+//                     border: "none",
+//                     backgroundColor: "transparent",
+//                   },
+//                   "& .MuiDataGrid-cell:active": {
+//                     outline: "none",
+//                     border: "none",
+//                   },
+//                 }}
+//               />
+//             )}
 //           </div>
 //         </div>
 //       </div>
@@ -98,131 +221,244 @@
 import { FC, useEffect, useState } from "react";
 import { PageTitle } from "../../../../_metronic/layout/core";
 import { KTIcon } from "../../../../_metronic/helpers";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Box, Button } from "@mui/material";
+import { Switch } from "@mui/material";
+import Lottie from "lottie-react";
 import logo from "../../../../../src/_metronic/assets/sass/components/logoimage/logo.png";
-import { getRequest, patchRequest } from "../../../modules/auth/core/_requests";
+import loaderAnimation from "../../../../_metronic/assets/sass/components/Animation - 1716715571159.json";
+import { getAdminPermissions } from "../../../utils/getPermissions";
 
 const AdminUserList: FC = () => {
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const token = localStorage.getItem("token");
+  const navigate = useNavigate();
 
+const permissions = getAdminPermissions();
+const currencyPerms = permissions.subMenu["Admin Users"] || [];
+  const canView = currencyPerms.includes("view");
+  const canEdit = currencyPerms.includes("edit");
+  const canDelete = currencyPerms.includes("delete");
+  const canCreate = currencyPerms.includes("create");
 
+  console.log("AdminUserList Permissions:", { canView, canEdit, canDelete, canCreate });
+
+  // Block page if user cannot view
+  if (!canView) {
+    return (
+      <>
+        <PageTitle>Access Denied</PageTitle>
+        <div className="alert alert-warning">
+          You don't have permission to view this page.
+        </div>
+      </>
+    );
+  }
+
+  // Fetch Users
   useEffect(() => {
     const fetchUsers = async () => {
+      setLoading(true);
       try {
-        const response = await fetch("https://adminapi.flexiclean.me/api/v1/admin/users", {
-          method: "POST", // Changed from PATCH to POST
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          // Include any body if necessary for the POST request
-          body: JSON.stringify({
-            // Add necessary data in the request body here if needed.
-          }),
-        });
-  
+        const response = await fetch(
+          "https://adminapi.flexiclean.me/api/v1/admin/users",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({}),
+          }
+        );
+
         if (response.ok) {
           const data = await response.json();
-          // Map the API response to match the DataGrid structure
-          const usersData = data.map((user: any, index: number) => ({
+
+          const usersData = data.data.map((user: any, index: number) => ({
             id: user._id || index,
-            profilePicture: user.profilePicture || logo,
-            name: `${user.firstName} ${user.lastName}`,
-            email: user.email,
-            username: user.username,
-            role: user.role,
+            profilePicture: user.profileImg
+              ? `https://adminapi.flexiclean.me/${user.profileImg}`
+              : logo,
+            name: user.name || "N/A",
+            email: user.email || "N/A",
+            role: user.role?.roleName || "N/A",
             mobile: user.mobile || "N/A",
-            lastUpdated: new Date(user.updatedAt).toLocaleDateString(),
-            status: user.status,
+            lastUpdated: user.updated_at
+              ? new Date(user.updated_at).toLocaleDateString()
+              : "N/A",
+            isActive: user.is_active,
+            fullUser: user,
           }));
+
           setRows(usersData);
         } else {
           console.error("Failed to fetch users");
         }
       } catch (error) {
         console.error("Error fetching users:", error);
+      } finally {
+        setLoading(false);
       }
     };
-  
+
     fetchUsers();
   }, [token]);
-  
 
-  // Define columns for the DataGrid
-  const columns: GridColDef[] = [
+  // Status Toggle Handler
+  const handleChangeStatus = async (id: string, currentStatus: boolean) => {
+    if (!canEdit) return;
+    try {
+      const response = await fetch(
+        `https://adminapi.flexiclean.me/api/v1/admin/users/${id}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            is_active: !currentStatus,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        setRows((prev) =>
+          prev.map((row) =>
+            row.id === id ? { ...row, isActive: !currentStatus } : row
+          )
+        );
+      } else {
+        console.error("Status update failed");
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+    }
+  };
+
+  // Base columns (without actions)
+  const baseColumns: GridColDef[] = [
     {
       field: "profilePicture",
-      headerName: "Profile Picture",
-      width: 120,
+      headerName: "Profile",
+      width: 100,
       renderCell: (params: any) => (
         <img
           src={params.value}
           alt="Profile"
-          style={{ width: "45px", borderRadius: "50%" }}
+          style={{ width: "40px", borderRadius: "50%" }}
         />
       ),
     },
-    { field: "name", headerName: "First & Last Name", width: 180 },
-    { field: "email", headerName: "Email ID", width: 200 },
-    { field: "username", headerName: "Username", width: 250 },
+    { field: "name", headerName: "Name", width: 180 },
+    { field: "email", headerName: "Email", width: 200 },
     { field: "role", headerName: "Role", width: 150 },
-    { field: "mobile", headerName: "Mobile Number", width: 150 },
-    { field: "lastUpdated", headerName: "Last Updated On", width: 160 },
-    { field: "status", headerName: "Status", width: 120 },
+    { field: "mobile", headerName: "Mobile", width: 150 },
+    { field: "lastUpdated", headerName: "Updated", width: 150 },
     {
-      field: "actions",
-      headerName: "Actions",
-      width: 100,
-      headerClassName: "sticky-header",
+      field: "status",
+      headerName: "Status",
+      width: 120,
       renderCell: (params: any) => (
-        <div className="action-dropdown">
-          <select className="form-select" defaultValue="">
-            <option value="" disabled>
-              ...
-            </option>
-            <option value="statusUpdate">Edit</option>
-            <option value="paymentUpdate">Delete</option>
-          </select>
-        </div>
+        <Switch
+          checked={params.row.isActive}
+          onChange={() => handleChangeStatus(params.row.id, params.row.isActive)}
+          disabled={!canEdit}
+        />
       ),
     },
   ];
+
+  // Add Actions column only if user can edit (currently only edit action)
+  if (canEdit) {
+    baseColumns.push({
+      field: "actions",
+      headerName: "Actions",
+      width: 100,
+      renderCell: (params: any) => (
+        <select
+          className="form-select"
+          defaultValue=""
+          onChange={(e) => {
+            if (e.target.value === "edit") {
+              navigate(`/adminUsers/edit/${params.row.id}`, {
+                state: { user: params.row.fullUser },
+              });
+            }
+            e.target.value = "";
+          }}
+        >
+          <option value="" disabled>...</option>
+          <option value="edit">Edit</option>
+          {/* Delete option can be added here with canDelete check if needed */}
+        </select>
+      ),
+    });
+  }
 
   return (
     <>
       <PageTitle>Admin Users</PageTitle>
       <div className="row g-5 g-xl-8">
-        <div className={`card `}>
-          <div className="card-header border-0 pt-5">
-            <h3 className="card-title align-items-start flex-column">
-              <span className="card-label fw-bold fs-3 mb-1">User List</span>
-            </h3>
-            <div
-              className="card-toolbar"
-              data-bs-toggle="tooltip"
-              data-bs-placement="top"
-              data-bs-trigger="hover"
-              title="Click to add a user"
-            >
-              <Link
-                to={`/adminUsers/create`}
-                className="btn btn-sm btn-light-primary"
-              >
-                <KTIcon iconName="plus" className="fs-3" />
-                New User
-              </Link>
-            </div>
+        <div className="card">
+          <div className="card-header border-0 pt-5 d-flex justify-content-between align-items-center">
+            <h3 className="card-title fw-bold fs-3">User List</h3>
+            {canCreate && (
+              <div className="card-toolbar">
+                <Link to="/adminUsers/create" className="btn btn-sm btn-light-primary">
+                  <KTIcon iconName="plus" className="fs-3" />
+                  New User
+                </Link>
+              </div>
+            )}
           </div>
           <div className="card-body py-3">
-            <DataGrid
-              rows={rows}
-              columns={columns}
-              hideFooter={true}
-              autoHeight={true}
-            />
+            {loading ? (
+              <div
+                className="text-center"
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: "50vh",
+                }}
+              >
+                <Lottie
+                  animationData={loaderAnimation}
+                  loop={true}
+                  style={{
+                    width: 150,
+                    height: 150,
+                    filter: "hue-rotate(200deg)",
+                  }}
+                />
+              </div>
+            ) : (
+              <DataGrid
+                rows={rows}
+                columns={baseColumns}
+                autoHeight
+                hideFooter
+                sx={{
+                  "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus": {
+                    outline: "none",
+                    border: "none",
+                    backgroundColor: "transparent",
+                  },
+                  "& .MuiDataGrid-columnHeader:focus-visible, & .MuiDataGrid-cell:focus-visible": {
+                    outline: "none",
+                    border: "none",
+                    backgroundColor: "transparent",
+                  },
+                  "& .MuiDataGrid-cell:active": {
+                    outline: "none",
+                    border: "none",
+                  },
+                }}
+              />
+            )}
           </div>
         </div>
       </div>

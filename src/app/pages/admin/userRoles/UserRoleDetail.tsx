@@ -9,6 +9,12 @@ import { useParams } from "react-router-dom";
 import AlertBox from "../../../../common/AlertBox";
 import Lottie from "lottie-react";
 import loaderAnimation from "../../../../_metronic/assets/sass/components/Animation - 1716715571159.json";
+interface Role {
+  _id: string;
+  roleName: string;
+  permissions: any[];
+  created_by: string;
+}
 const UserRoleDetail: FC = () => {
   const [rowData, setRowData] = useState<any[]>([]);
   const [selectedPermissions, setSelectedPermissions] = useState<any>({});
@@ -21,7 +27,9 @@ const UserRoleDetail: FC = () => {
   const [errorMsg, setErrorMsg] = useState(``);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isFailed, setIsFailed] = useState(false);
-
+  const [isLoadingRoles, setIsLoadingRoles] = useState(true);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const token = localStorage.getItem("token");
   const closeAlert = () => {
     if (isSuccess) setIsSuccess(false);
     if (isFailed) setIsFailed(false);
@@ -37,7 +45,7 @@ const UserRoleDetail: FC = () => {
     // Update the state with the extracted ID
     setCompanyId("66947d4f3397b14671f90f5d");
     // console.log(extractedId);
-    
+
   }, []);
   // Fetch permissions data
   const getData = async (id: any) => {
@@ -93,7 +101,7 @@ const UserRoleDetail: FC = () => {
           newPermissions[label].push(permission);
         }
       } else {
-      
+
         if (!newPermissions[label]) {
           newPermissions[label] = {};
         }
@@ -143,7 +151,13 @@ const UserRoleDetail: FC = () => {
         console.log("Response:", response);
         if (response?.data?.status === "ok") {
           setIsSuccess(true);
-          setSuccessMsg(`Permission has been updated successfully`);
+          setSuccessMsg("Permission has been updated successfully");
+          fetchRoles();
+          try {
+            localStorage.setItem("permissions", JSON.stringify(selectedPermissions));
+          } catch (error) {
+            console.error("Failed to save permissions:", error);
+          }
         } else {
           setIsFailed(true);
           setErrorMsg(`Something Went Wrong`);
@@ -163,196 +177,232 @@ const UserRoleDetail: FC = () => {
       console.error("Error:", error);
     }
   };
+  useEffect(() => {
+    if (!token) {
+      setIsLoadingRoles(false);
+      localStorage.removeItem("permissions");
+      return;
+    }
 
+
+    fetchRoles();
+  }, [token]);
+  const fetchRoles = async () => {
+    try {
+      const res = await fetch(
+        "https://adminapi.flexiclean.me/api/v1/admin/roles",
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = await res.json();
+      const rolesList: Role[] = data.data || [];
+      setRoles(rolesList);
+      if (rolesList.length > 0) {
+        const adminRole = rolesList.find((r) => r.roleName === "Admin");
+        const defaultRole = adminRole || rolesList[0];
+        localStorage.setItem(
+          "permissions",
+          JSON.stringify(defaultRole.permissions || [])
+        );
+        localStorage.setItem("roleId", defaultRole._id);
+      }
+    } catch (err) {
+      console.error("Roles fetch error", err);
+    } finally {
+      setIsLoadingRoles(false);
+    }
+  };
   return (
     <>
       <PageTitle>ADD/UPDATE USER ROLE</PageTitle>
       {isLoading ? (
-              <div
-                className="text-center"
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "50vh",
-                }}
-              >
-                <Lottie
-                  animationData={loaderAnimation}
-                  loop={true}
-                  style={{
-                    width: 150,
-                    height: 150,
-                    filter: "hue-rotate(200deg)", // Adjust the degree for a blue effect
-                  }}
-                />
+        <div
+          className="text-center"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "50vh",
+          }}
+        >
+          <Lottie
+            animationData={loaderAnimation}
+            loop={true}
+            style={{
+              width: 150,
+              height: 150,
+              filter: "hue-rotate(200deg)", // Adjust the degree for a blue effect
+            }}
+          />
+        </div>
+      ) : (
+        <div className="row g-5 g-xl-8">
+          <div className="card">
+            <div className="card-body py-3">
+              <div className="row mb-12">
+                <label className="col-lg-4 col-form-label required fw-bold fs-6">
+                  Role
+                </label>
+                <div className="col-lg-8">
+                  <input
+                    type="text"
+                    className="form-control form-control-lg form-control-solid mb-3 mb-lg-0"
+                    placeholder="Enter Role Name"
+                    value={roleName}
+                    onChange={(e) => setRoleName(e.target.value)}
+                  />
+                </div>
               </div>
-            ) : (
-      <div className="row g-5 g-xl-8">
-        <div className="card">
-          <div className="card-body py-3">
-            <div className="row mb-12">
-              <label className="col-lg-4 col-form-label required fw-bold fs-6">
-                Role
-              </label>
-              <div className="col-lg-8">
-                <input
-                  type="text"
-                  className="form-control form-control-lg form-control-solid mb-3 mb-lg-0"
-                  placeholder="Enter Role Name"
-                  value={roleName}
-                  onChange={(e) => setRoleName(e.target.value)}
-                />
+              <div className="row mb-12">
+                <label className="col-lg-4 col-form-label required fw-bold fs-6">
+                  Description
+                </label>
+                <div className="col-lg-8">
+                  <input
+                    type="text"
+                    className="form-control form-control-lg form-control-solid mb-3 mb-lg-0"
+                    placeholder="Enter Description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
+                </div>
               </div>
-            </div>
-            <div className="row mb-12">
-              <label className="col-lg-4 col-form-label required fw-bold fs-6">
-                Description
-              </label>
-              <div className="col-lg-8">
-                <input
-                  type="text"
-                  className="form-control form-control-lg form-control-solid mb-3 mb-lg-0"
-                  placeholder="Enter Description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-              </div>
-            </div>
 
-            <div className="table-responsive">
-              <table className="table">
-                <thead>
-                  <tr className="fw-bold text-muted">
-                    <th className="min-w-200px">Label</th>
-                    <th className="min-w-100px">View</th>
-                    <th className="min-w-100px">Create</th>
-                    <th className="min-w-100px">Edit</th>
-                    <th className="min-w-100px">Delete</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rowData?.length > 0 ? (
-                    rowData.map((result: any) => (
-                      <>
-                        <tr key={result?.label}>
-                          <td>
-                            <label className="form-check form-check-custom form-check-solid align-items-start">
-                              {/* <input
+              <div className="table-responsive">
+                <table className="table">
+                  <thead>
+                    <tr className="fw-bold text-muted">
+                      <th className="min-w-200px">Label</th>
+                      <th className="min-w-100px">View</th>
+                      <th className="min-w-100px">Create</th>
+                      <th className="min-w-100px">Edit</th>
+                      <th className="min-w-100px">Delete</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rowData?.length > 0 ? (
+                      rowData.map((result: any) => (
+                        <>
+                          <tr key={result?.label}>
+                            <td>
+                              <label className="form-check form-check-custom form-check-solid align-items-start">
+                                {/* <input
                                                             className='form-check-input'
                                                             type='checkbox'
                                                             data-kt-check='true'
                                                             data-kt-check-target='.widget-9-check'
                                                         /> */}
-                              <span className="form-check-label d-flex flex-column align-items-start">
-                                <span className="fw-bolder fs-5 mb-0">
-                                  {result?.label}
+                                <span className="form-check-label d-flex flex-column align-items-start">
+                                  <span className="fw-bolder fs-5 mb-0">
+                                    {result?.label}
+                                  </span>
                                 </span>
-                              </span>
-                            </label>
-                          </td>
-                          {["view", "create", "edit", "delete"].map((perm) => (
-                            <td key={perm}>
-                              <label className="form-check form-check-custom form-check-solid align-items-start">
-                                <input
-                                  className="form-check-input"
-                                  type="checkbox"
-                                  checked={
-                                    Array.isArray(
-                                      selectedPermissions[result?.label]
-                                    )
-                                      ? selectedPermissions[
-                                          result?.label
-                                        ]?.includes(perm)
-                                      : Array.isArray(result?.permissions) &&
-                                        result?.permissions?.includes(perm)
-                                  }
-                                  onChange={() =>
-                                    handleCheckboxChange(result?.label, perm)
-                                  }
-                                />
                               </label>
                             </td>
-                          ))}
-                        </tr>
-                        {result?.subMenu &&
-                          result?.subMenu.length > 0 &&
-                          result.subMenu.map((subMenu: any, index: any) => (
-                            <tr key={subMenu.label}>
-                              <td className="px-4">
+                            {["view", "create", "edit", "delete"].map((perm) => (
+                              <td key={perm}>
                                 <label className="form-check form-check-custom form-check-solid align-items-start">
-                                  {/* <input
+                                  <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    checked={
+                                      Array.isArray(
+                                        selectedPermissions[result?.label]
+                                      )
+                                        ? selectedPermissions[
+                                          result?.label
+                                        ]?.includes(perm)
+                                        : Array.isArray(result?.permissions) &&
+                                        result?.permissions?.includes(perm)
+                                    }
+                                    onChange={() =>
+                                      handleCheckboxChange(result?.label, perm)
+                                    }
+                                  />
+                                </label>
+                              </td>
+                            ))}
+                          </tr>
+                          {result?.subMenu &&
+                            result?.subMenu.length > 0 &&
+                            result.subMenu.map((subMenu: any, index: any) => (
+                              <tr key={subMenu.label}>
+                                <td className="px-4">
+                                  <label className="form-check form-check-custom form-check-solid align-items-start">
+                                    {/* <input
                                                                     className='form-check-input'
                                                                     type='checkbox'
                                                                     data-kt-check='true'
                                                                     data-kt-check-target='.widget-9-check'
                                                                 /> */}
-                                  <span className="form-check-label d-flex flex-column align-items-start">
-                                    <span className="fw-bolder fs-5 mb-0">
-                                      {subMenu?.label}
+                                    <span className="form-check-label d-flex flex-column align-items-start">
+                                      <span className="fw-bolder fs-5 mb-0">
+                                        {subMenu?.label}
+                                      </span>
                                     </span>
-                                  </span>
-                                </label>
-                              </td>
-                              {["view", "create", "edit", "delete"].map(
-                                (perm) => (
-                                  <td key={perm}>
-                                    <label className="form-check form-check-custom form-check-solid align-items-start">
-                                      <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        checked={
-                                          Array.isArray(
-                                            selectedPermissions[
+                                  </label>
+                                </td>
+                                {["view", "create", "edit", "delete"].map(
+                                  (perm) => (
+                                    <td key={perm}>
+                                      <label className="form-check form-check-custom form-check-solid align-items-start">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          checked={
+                                            Array.isArray(
+                                              selectedPermissions[
                                               result?.label
-                                            ]?.[subMenu?.label]
-                                          )
-                                            ? selectedPermissions[
+                                              ]?.[subMenu?.label]
+                                            )
+                                              ? selectedPermissions[
                                                 result?.label
                                               ]?.[subMenu?.label]?.includes(
                                                 perm
                                               )
-                                            : Array.isArray(
+                                              : Array.isArray(
                                                 result?.subMenu[index]
                                                   ?.permissions
                                               ) &&
                                               result?.subMenu[
                                                 index
                                               ]?.permissions?.includes(perm)
-                                        }
-                                        onChange={() =>
-                                          handleCheckboxChange(
-                                            result?.label,
-                                            perm,
-                                            true,
-                                            subMenu?.label
-                                          )
-                                        }
-                                      />
-                                    </label>
-                                  </td>
-                                )
-                              )}
-                            </tr>
-                          ))}
-                      </>
-                    ))
-                  ) : (
-                    <tr>
-                      <td>No Data Found</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                                          }
+                                          onChange={() =>
+                                            handleCheckboxChange(
+                                              result?.label,
+                                              perm,
+                                              true,
+                                              subMenu?.label
+                                            )
+                                          }
+                                        />
+                                      </label>
+                                    </td>
+                                  )
+                                )}
+                              </tr>
+                            ))}
+                        </>
+                      ))
+                    ) : (
+                      <tr>
+                        <td>No Data Found</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
-            <button className="btn btn-primary" onClick={handleSubmit}>
-              Submit
-            </button>
+              <button className="btn btn-primary" onClick={handleSubmit}>
+                Submit
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-          )}
+      )}
       {isSuccess && (
         <AlertBox
           redirectUrl={`/userRoles`}

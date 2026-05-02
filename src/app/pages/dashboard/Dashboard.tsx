@@ -9,16 +9,25 @@ import {
 } from '../../../_metronic/partials/widgets';
 import CountryDropdown from './CountryDropdown';
 import { useNavigate } from 'react-router-dom';
-
+import Lottie from 'lottie-react';
+import loaderAnimation from "../../../_metronic/assets/sass/components/Animation - 1716715571159.json";
+import RoleProvider from '../admin/adminUsers/RoleProvider';
 interface StatusWiseOrder {
   status: string;
   count: number;
 }
-
+interface Props {
+  token: string | null;
+}
 interface OrderCountItem {
   statusWiseOrders: StatusWiseOrder[];
 }
-
+interface Role {
+  _id: string;
+  roleName: string;
+  permissions: any[];
+  created_by: string;
+}
 interface OrderPayment {
   orderNo: string;
   orderDate: string;
@@ -134,15 +143,36 @@ interface DashboardContentProps {
 }
 
 const DashboardContent: FC<DashboardContentProps> = ({
+
   data,
   onCountrySelect,
   onAgentSelect,
 }) => {
   if (!data) {
-    return <div>Loading...</div>; // Display loading if data is null
+    return <div
+      className="text-center"
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "50vh",
+      }}
+    >
+      <Lottie
+        animationData={loaderAnimation}
+        loop={true}
+        style={{
+          width: 150,
+          height: 150,
+          filter: "hue-rotate(200deg)",
+        }}
+      />
+    </div>; // Display loading if data is null
   }
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const navigate = useNavigate()
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [isLoadingRoles, setIsLoadingRoles] = useState(true);
   const {
     totalCustomers,
     totalAgents,
@@ -152,11 +182,70 @@ const DashboardContent: FC<DashboardContentProps> = ({
     recentCustomers = [],
     recentAgents = [],
   } = data;
+  const token = localStorage.getItem("token");
+  useEffect(() => {
+    if (!token) {
+      setIsLoadingRoles(false);
+        localStorage.removeItem("permissions");
+      return;
+    }
+    const fetchRoles = async () => {
+      try {
+        const res = await fetch(
+          "https://adminapi.flexiclean.me/api/v1/admin/roles",
+          {
+            method: "GET",
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const data = await res.json();
+        const rolesList: Role[] = data.data || [];
+        setRoles(rolesList);
+        if (rolesList.length > 0) {
+          const adminRole = rolesList.find((r) => r.roleName === "Admin");
+          const defaultRole = adminRole || rolesList[0];
+          localStorage.setItem(
+            "permissions",
+            JSON.stringify(defaultRole.permissions || [])
+          );
+          localStorage.setItem("roleId", defaultRole._id);
+        }
+      } catch (err) {
+        console.error("Roles fetch error", err);
+      } finally {
+        setIsLoadingRoles(false);
+      }
+    };
+
+    fetchRoles();
+  }, [token]);
+  if (isLoadingRoles) {
+    return <div
+      className="text-center"
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "50vh",
+      }}
+    >
+      <Lottie
+        animationData={loaderAnimation}
+        loop={true}
+        style={{
+          width: 150,
+          height: 150,
+          filter: "hue-rotate(200deg)",
+        }}
+      />
+    </div>;
+  }
   return (
     <>
       <div className="w-100 d-flex justify-content-end align-items-end mb-5">
         <CountryDropdown onCountrySelect={onCountrySelect} />
       </div>
+
 
       <div className="row g-5 g-xl-8">
         <div className="row g-4">

@@ -199,7 +199,6 @@ import { PageTitle } from "../../../../_metronic/layout/core";
 import { KTIcon } from "../../../../_metronic/helpers";
 import { Link, useNavigate } from "react-router-dom";
 import { Switch } from "@mui/material";
-import { stringToDate } from "../../../../common/Date";
 import Swal from "sweetalert2";
 import changeStatus from "../../../../common/ChangeStatus";
 import Lottie from "lottie-react";
@@ -213,7 +212,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import ReactPaginate from "react-paginate";
 import { IconContext } from "react-icons";
 import { AiFillLeftCircle, AiFillRightCircle } from "react-icons/ai";
-
+import { getActivitiesPermissions } from "../../../utils/getPermissions";
 
 interface BannerData {
   _id: string;
@@ -227,73 +226,96 @@ interface BannerData {
 }
 
 const Discountlist: FC = () => {
-  const [rowData, setRowData] = useState<BannerData[]>([]);
+  const [rowData, setRowData] = useState<any[]>([]);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [successMsg, setSuccessMsg] = useState(``);
-  const [errorMsg, setErrorMsg] = useState(``);
+  const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
   const [isFailed, setIsFailed] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
   const [page, setPage] = useState<number>(0);
   const [total, setTotal] = useState<number>(0);
 
- const pageSize = 10;
+  const pageSize = 10;
+
+  // Permissions
+  const permissions = getActivitiesPermissions();
+  const canView = permissions.includes("view");
+  const canEdit = permissions.includes("edit");
+  const canDelete = permissions.includes("delete");
+  const canCreate = permissions.includes("create");
+
+  console.log("Permissions:", { canView, canEdit, canDelete, canCreate });
+
+  // Block page if user cannot view
+  if (!canView) {
+    return (
+      <>
+        <PageTitle>Access Denied</PageTitle>
+        <div className="alert alert-warning">
+          You don't have permission to view this page.
+        </div>
+      </>
+    );
+  }
+
   const deleteBanner = async (ID: string) => {
+    if (!canDelete) return;
     if (window.confirm("Are you sure to delete this record?")) {
-      await deleteRequest(`/activities/discount/` + ID).then(async (response) => {
+      setLoading(true);
+      try {
+        const response = await deleteRequest(`/activities/discount/${ID}`);
         if (response?.data?.status === "ok") {
           setIsSuccess(true);
-          setSuccessMsg(`Gift Card has been deleted successfully`);
+          setSuccessMsg(`Discount has been deleted successfully`);
           await getData();
         } else {
           setIsFailed(true);
           setErrorMsg(`Something Went Wrong`);
         }
-      });
+      } catch (error) {
+        setIsFailed(true);
+        setErrorMsg(`Error deleting discount`);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  const getData =useCallback( async () => {
-    setLoading(true); // Set loading to true before fetching data
+  const getData = useCallback(async () => {
+    setLoading(true);
     try {
       const bannerData = await postRequest(
         `/activities/discounts?pageIndex=${page}&pageSize=${pageSize}`,
         ``
       );
-       
-       setTotal(bannerData?.data?.totalCount)
-       console.log(bannerData.data.data);
-       
+
+      setTotal(bannerData?.data?.totalCount);
       if (bannerData?.data?.status === "ok") {
-        
         const formattedData = bannerData.data.data.map((item: any) => ({
-        
-          
           id: item._id,
           postFrom: item.postFrom,
-          companyName: item.companyId?.[0]?.companyName, // Company name
-          companyId: item.companyId?.[0]?._id, // Company ID
+          companyName: item.companyId?.[0]?.companyName,
+          companyId: item.companyId?.[0]?._id,
           promoTitle: item.promoTitle,
           promoCode: item.promoCode,
           offerType: item.offerType,
-          orderValue: `${item.orderValue >= 100 ? item.orderValue.toFixed(3) : item.orderValue.toFixed(2)} ${item?.currencyId?.currencySymbol||""} `, // Format the order value
+          orderValue: `${item.orderValue >= 100 ? item.orderValue.toFixed(3) : item.orderValue.toFixed(2)} ${item?.currencyId?.currencySymbol || ""}`,
           noOfCoupons: item.noOfCoupons,
           customerUsageLimit: item.customerUsageLimit,
           discountType: item.discountType,
           discountAmt: item.discountAmt,
           discountPercentage: item.discountPercentage,
-          startDate: formatDate(item.startDate), // Format start date
-          endDate: formatDate(item.endDate), // Format end date
+          startDate: formatDate(item.startDate),
+          endDate: formatDate(item.endDate),
           applicableFor: item.applicableFor,
           imgUrl: item.imgUrl,
           sortNo: item.sortNo,
           isActive: item.is_active,
           isDeleted: item.is_deleted,
           createdBy: item.created_by,
-          updatedAt: formatDate(item.updated_at), // Format updated_at date
+          updatedAt: formatDate(item.updated_at),
         }));
-   console.log(formattedData);
-   
         setRowData(formattedData);
       }
     } catch (error) {
@@ -301,11 +323,9 @@ const Discountlist: FC = () => {
       setIsFailed(true);
       setErrorMsg("Error fetching data");
     } finally {
-      setLoading(false); // Set loading to false after data is fetched
+      setLoading(false);
     }
-  },[page])
-  
-  
+  }, [page]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -315,42 +335,55 @@ const Discountlist: FC = () => {
     return `${day}/${month}/${year}`;
   };
 
-  const columns: GridColDef[] = [
+  const handleChangeStatus = async (id: any, status: any) => {
+    if (!canEdit) return;
+    const result = await changeStatus({
+      id,
+      status,
+      Url: `/activities/discount/67212e7ce6eb7ab651715f1d`, // keep original URL; consider updating if needed
+    });
+
+    if (result) {
+      if (result.success) {
+        Swal.fire("Success", result.message, "success");
+        getData();
+      } else {
+        Swal.fire("Error", result.message, "error");
+      }
+    } else {
+      Swal.fire("Error", "Something went wrong", "error");
+    }
+  };
+
+  // Base columns (without options)
+  const baseColumns: GridColDef[] = [
     {
       field: "promoTitle",
       headerName: "Promo Title",
       minWidth: 150,
-      renderCell: (params: any) => (
-        <Link 
-          to={`/activities/discount/${params.row.id}`}  // Correct URL path
-          state={params.row}  // Pass the full row data if needed in the target page
-        >
-          {params.row.promoTitle} {/* Display the promo title or any other value you want */}
-        </Link>
-      ),
-    },    
-    
+      renderCell: (params: any) => {
+        if (canEdit) {
+          return (
+            <Link
+              to={`/activities/discount/${params.row.id}`}
+              state={params.row}
+            >
+              {params.row.promoTitle}
+            </Link>
+          );
+        }
+        return <span>{params.row.promoTitle}</span>;
+      },
+    },
     {
       field: "promoCode",
       headerName: "Promo Code",
       minWidth: 150,
-     
     },
-    // {
-    //   field: "companyName", // New column for company name
-    //   headerName: "Company Name",
-    //   minWidth: 150,
-    //   renderCell: (params: any) => (
-    //     <div style={{ visibility: "hidden" }}>
-    //       {params.row.companyId?.[0]?.companyName}
-    //     </div>
-    //   ),
-    // },
     {
       field: "offerType",
       headerName: "Offer Type",
       minWidth: 100,
-    
     },
     {
       field: "orderValue",
@@ -370,14 +403,17 @@ const Discountlist: FC = () => {
       renderCell: (params: any) => (
         <Switch
           checked={params.row.isActive || false}
-          onChange={() =>
-            handleChangeStatus(params.row.id, params.row.isActive)
-          }
+          onChange={() => handleChangeStatus(params.row.id, params.row.isActive)}
+          disabled={!canEdit}
           inputProps={{ "aria-label": "controlled" }}
         />
       ),
     },
-    {
+  ];
+
+  // Add Options column only if user can edit or delete
+  if (canEdit || canDelete) {
+    baseColumns.push({
       field: "options",
       headerName: "Options",
       width: 150,
@@ -387,34 +423,30 @@ const Discountlist: FC = () => {
             className="form-select"
             onChange={(e) => {
               const selectedOption = e.target.value;
-              
-              if (selectedOption === "edit") {
-                // Store full row data, including companyId, in localStorage
+              if (selectedOption === "edit" && canEdit) {
                 const fullRowData = params.row;
-                localStorage.setItem("selectedDiscountData", JSON.stringify(fullRowData));
-    
-                // Navigate to the edit page with state
+                localStorage.setItem(
+                  "selectedDiscountData",
+                  JSON.stringify(fullRowData)
+                );
                 navigate(`/activities/discount/${params.row.id}`, {
-                  state: fullRowData, // Pass full row data to the target page
+                  state: fullRowData,
                 });
-              } else if (selectedOption === "delete") {
+              } else if (selectedOption === "delete" && canDelete) {
                 deleteBanner(params.row.id);
               }
-    
-              // Reset the select dropdown to default after selection
               e.target.value = "";
             }}
+            defaultValue=""
           >
-            <option value="">...</option>
-            <option value="edit">Edit</option>
-            <option value="delete">Delete</option>
+            <option value="" disabled>...</option>
+            {canEdit && <option value="edit">Edit</option>}
+            {canDelete && <option value="delete">Delete</option>}
           </select>
         </div>
       ),
-    }
-    
-    
-  ];
+    });
+  }
 
   const closeAlert = () => {
     if (isSuccess) setIsSuccess(false);
@@ -422,31 +454,8 @@ const Discountlist: FC = () => {
   };
 
   useEffect(() => {
-    async function loadData() {
-      await getData();
-    }
-
-    loadData();
+    getData();
   }, [getData]);
-
-  const handleChangeStatus = async (id: any, status: any) => {
-    const result = await changeStatus({
-      id,
-      status,
-      Url: `/activities/discount/67212e7ce6eb7ab651715f1d`,
-    });
-
-    if (result) {
-      if (result.success) {
-        Swal.fire("Success", result.message, "success");
-        getData(); // Update the list if necessary
-      } else {
-        Swal.fire("Error", result.message, "error");
-      }
-    } else {
-      Swal.fire("Error", "Something went wrong", "error");
-    }
-  };
 
   return (
     <>
@@ -463,21 +472,24 @@ const Discountlist: FC = () => {
               </h3>
             </div>
 
-            <div
-              className="card-toolbar"
-              data-bs-toggle="tooltip"
-              data-bs-placement="top"
-              data-bs-trigger="hover"
-              title="Click to add a user"
-            >
-              <Link
-                to={`/activities/discount/create`}
-                className="btn btn-sm btn-light-primary"
+            {/* New Discount button - only if user can create */}
+            {canCreate && (
+              <div
+                className="card-toolbar"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                data-bs-trigger="hover"
+                title="Click to add a discount"
               >
-                <KTIcon iconName="plus" className="fs-3" />
-                New Discount
-              </Link>
-            </div>
+                <Link
+                  to="/activities/discount/create"
+                  className="btn btn-sm btn-light-primary"
+                >
+                  <KTIcon iconName="plus" className="fs-3" />
+                  New Discount
+                </Link>
+              </div>
+            )}
           </div>
           <div className="card-body py-3">
             {loading ? (
@@ -503,32 +515,31 @@ const Discountlist: FC = () => {
             ) : (
               <DataGrid
                 rows={rowData}
-                columns={columns}
+                columns={baseColumns}
                 hideFooter={true}
                 autoHeight={true}
                 sx={{
-                    "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus": {
-                      outline: "none",
-                      border: "none",
-                      backgroundColor: "transparent",
-                    },
-                    "& .MuiDataGrid-columnHeader:focus-visible, & .MuiDataGrid-cell:focus-visible": {
-                      outline: "none",
-                      border: "none", 
-                      backgroundColor: "transparent",
-                    },
-                  
-                     "& .MuiDataGrid-cell:active": {
-                      outline: "none",
-                      border: "none",
-                    },
-                  }}
+                  "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus": {
+                    outline: "none",
+                    border: "none",
+                    backgroundColor: "transparent",
+                  },
+                  "& .MuiDataGrid-columnHeader:focus-visible, & .MuiDataGrid-cell:focus-visible": {
+                    outline: "none",
+                    border: "none",
+                    backgroundColor: "transparent",
+                  },
+                  "& .MuiDataGrid-cell:active": {
+                    outline: "none",
+                    border: "none",
+                  },
+                }}
               />
             )}
           </div>
         </div>
       </div>
-   <div className="pagewrapper">
+      <div className="pagewrapper">
         <ReactPaginate
           containerClassName="pagination"
           pageClassName="page-item"
@@ -550,12 +561,12 @@ const Discountlist: FC = () => {
       </div>
 
       {isSuccess && (
-        <AlertBox redirectUrl={null} close={closeAlert} type={`success`}>
+        <AlertBox redirectUrl={null} close={closeAlert} type="success">
           {successMsg}
         </AlertBox>
       )}
       {isFailed && (
-        <AlertBox redirectUrl={null} close={closeAlert} type={`error`}>
+        <AlertBox redirectUrl={null} close={closeAlert} type="error">
           {errorMsg}
         </AlertBox>
       )}

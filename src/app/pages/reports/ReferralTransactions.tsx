@@ -6,11 +6,11 @@
 // import {
 //   Offcanvas,
 //   Form,
-//   Dropdown,
 //   Row,
 //   Col,
 //   Button,
 // } from "react-bootstrap";
+// import Select from "react-select";
 
 // // Types
 // interface ICustomer {
@@ -26,6 +26,7 @@
 // }
 
 // interface ITransaction {
+//   paymentType: string;
 //   updated_at?: string;
 //   refname?: string;
 //   customerId?: ICustomer;
@@ -44,13 +45,17 @@
 //   const [total, setTotal] = useState<number>(0);
 //   const [data, setData] = useState<ITransaction[]>([]);
 //   const [isOffcanvasOpen, setIsOffcanvasOpen] = useState<boolean>(false);
-//   const [selectAllCustomers, setSelectAllCustomers] = useState<boolean>(false);
 //   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
 //   const [customers, setCustomers] = useState<ICustomer[]>([]);
 //   const [filters, setFilters] = useState({ startDate: "", endDate: "" });
 
 //   const pageSize = 10;
 //   const token = localStorage.getItem("token");
+
+//   const customerOptions = customers.map((c) => ({
+//     value: c._id,
+//     label: `${c.firstName} ${c.lastName} (${c.customerType || "N/A"})`,
+//   }));
 
 //   // Fetch Transactions
 //   const fetchReferralTransactions = useCallback(async () => {
@@ -74,7 +79,7 @@
 //             "Content-Type": "application/json",
 //           },
 //           body: JSON.stringify({
-//           ...payload,
+//             ...payload,
 //             paymentType: "Referal Credit",
 //           }),
 //         }
@@ -125,20 +130,6 @@
 //     setIsOffcanvasOpen(open);
 //   };
 
-//   const handleSelectAllCustomers = () => {
-//     setSelectAllCustomers((prev) => {
-//       const newSelected = !prev ? customers.map((c) => c._id) : [];
-//       setSelectedCustomers(newSelected);
-//       return !prev;
-//     });
-//   };
-
-//   const handleCheckboxChange = (id: string) => {
-//     setSelectedCustomers((prev) =>
-//       prev.includes(id) ? prev.filter((cid) => cid !== id) : [...prev, id]
-//     );
-//   };
-
 //   const handleSave = () => {
 //     fetchReferralTransactions();
 //     toggleOffcanvas(false)();
@@ -187,36 +178,23 @@
 //                 </Form.Group>
 //               </Col>
 //             </Row>
+
+//             {/* Updated Customer Filter */}
 //             <Form.Group className="mb-4">
 //               <Form.Label>Customer</Form.Label>
-//               <Dropdown className="w-100">
-//                 <Dropdown.Toggle variant="light" className="w-100">
-//                   {selectedCustomers.length > 0 ? "Customers Selected" : "Select Customer"}
-//                 </Dropdown.Toggle>
-//                 <Dropdown.Menu style={{ maxHeight: "300px", overflowY: "auto" }}>
-//                   <Form.Group className="px-3">
-//                     <Form.Check
-//                       type="checkbox"
-//                       label="Select All"
-//                       checked={selectAllCustomers}
-//                       onChange={handleSelectAllCustomers}
-//                     />
-//                   </Form.Group>
-//                   <Dropdown.Divider />
-//                   {customers.map((customer) => (
-//                     <Form.Group key={customer._id} className="px-3">
-//                       <Form.Check
-//                         type="checkbox"
-//                         label={`${customer.firstName} ${customer.lastName} (${customer.customerType || "N/A"})`}
-//                         checked={selectedCustomers.includes(customer._id)}
-//                         onChange={() => handleCheckboxChange(customer._id)}
-//                       />
-//                     </Form.Group>
-//                   ))}
-//                 </Dropdown.Menu>
-//               </Dropdown>
+//               <Select
+//                 isMulti
+//                 options={customerOptions}
+//                 value={customerOptions.filter((opt) => selectedCustomers.includes(opt.value))}
+//                 onChange={(selected) => {
+//                   const ids = selected.map((s) => s.value);
+//                   setSelectedCustomers(ids);
+//                 }}
+//                 placeholder="Select customers..."
+//               />
 //             </Form.Group>
 //           </Form>
+
 //           <div className="d-flex justify-content-end">
 //             <Button onClick={handleSave}>Apply</Button>
 //           </div>
@@ -244,7 +222,7 @@
 //                       ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
 //                     : "-"}
 //                 </td>
-//                 <td>{dt.refname || "-"}</td>
+//                 <td>{dt.paymentType || "-"}</td>
 //                 <td>
 //                   {dt.customerId
 //                     ? `${dt.customerId.firstName} ${dt.customerId.lastName} / ${dt.customerId.email}`
@@ -290,9 +268,6 @@
 // };
 
 // export default ReferralTransactions;
-
-
-
 import { FC, useCallback, useEffect, useState } from "react";
 import { PageTitle } from "../../../_metronic/layout/core";
 import { IconContext } from "react-icons";
@@ -306,6 +281,7 @@ import {
   Button,
 } from "react-bootstrap";
 import Select from "react-select";
+import { getReportsPermissions } from "../../utils/getPermissions";
 
 // Types
 interface ICustomer {
@@ -346,6 +322,27 @@ const ReferralTransactions: FC = () => {
 
   const pageSize = 10;
   const token = localStorage.getItem("token");
+
+  // Permissions
+  const permissions = getReportsPermissions();
+  const canView = permissions.includes("view");
+  const canEdit = permissions.includes("edit");
+  const canDelete = permissions.includes("delete");
+  const canCreate = permissions.includes("create");
+
+  console.log("ReferralTransactions Permissions:", { canView, canEdit, canDelete, canCreate });
+
+  // Block page if user cannot view
+  if (!canView) {
+    return (
+      <>
+        <PageTitle>Access Denied</PageTitle>
+        <div className="alert alert-warning">
+          You don't have permission to view this page.
+        </div>
+      </>
+    );
+  }
 
   const customerOptions = customers.map((c) => ({
     value: c._id,

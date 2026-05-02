@@ -1,4 +1,4 @@
-import { lazy, FC, Suspense } from "react";
+import { lazy, FC, Suspense, useEffect, useState } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import { MasterLayout } from "../../_metronic/layout/MasterLayout";
 import TopBarProgress from "react-topbar-progress-indicator";
@@ -94,27 +94,34 @@ import PaymentTransactions from "../pages/reports/PaymentTransactions";
 import Profile from "../pages/Profile/Profile";
 import Stats from "../pages/reports/stats";
 import OverallTransactions from "../pages/reports/overallTransactions";
+import Lottie from "lottie-react";
+import loaderAnimation from "../../_metronic/assets/sass/components/Animation - 1716715571159.json";
+
 
 const PrivateRoutes = () => {
+
   const ProfilePage = lazy(() => import("../modules/profile/ProfilePage"));
   const WizardsPage = lazy(() => import("../modules/wizards/WizardsPage"));
   const AccountPage = lazy(() => import("../modules/accounts/AccountPage"));
   const WidgetsPage = lazy(() => import("../modules/widgets/WidgetsPage"));
   const ChatPage = lazy(() => import("../modules/apps/chat/ChatPage"));
+
   const UsersPage = lazy(
     () => import("../modules/apps/user-management/UsersPage")
   );
+
 
   return (
     <Routes>
       <Route element={<MasterLayout />}>
         <Route path="auth/*" element={<Navigate to="/dashboard" />} />
-        <Route path='profile' element={<Profile/>} />
+        <Route path='profile' element={<Profile />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="userRoles" element={<UserRoles />} />
         <Route path="userRoles/:roleId" element={<UserRoleDetail />} />
         <Route path="adminUsers" element={<AdminUserList />} />
-        <Route path="adminUsers/:userId" element={<AdminUserDetail />} />
+        <Route path="/adminUsers/create" element={<AdminUserDetail />} />
+        <Route path="/adminUsers/edit/:id" element={<AdminUserDetail />} />
         <Route path="currency" element={<CurrencyList />} />
         <Route path="currency/:currencyId" element={<CurrencyDetail />} />
         <Route path="country" element={<CountryList />} />
@@ -186,7 +193,7 @@ const PrivateRoutes = () => {
           path="customer/transactions/:customerId"
           element={<CustomerTransactions />}
         />
-       
+
         <Route path="customer/cards/:customerId" element={<CustomerCards />} />
         <Route
           path="customer/orders/:customerId"
@@ -273,15 +280,15 @@ const PrivateRoutes = () => {
         <Route
           path="reports/discountTransactions"
           element={<DiscountTransactions />}
-        /> 
+        />
         <Route
-        path="reports/stats"
-        element={<Stats/>}
-      /> 
-      <Route
-      path="/reports/overallTransactions"
-      element={<OverallTransactions />}
-    />
+          path="reports/stats"
+          element={<Stats />}
+        />
+        <Route
+          path="/reports/overallTransactions"
+          element={<OverallTransactions />}
+        />
         <Route path="reports/activityLog" element={<ActivityLog />} />
         <Route
           path="reports/mcreditsTransactions"

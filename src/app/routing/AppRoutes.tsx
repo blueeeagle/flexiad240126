@@ -40,6 +40,7 @@ import { PrivateRoutes } from "./PrivateRoutes";
 import { ErrorsPage } from "../modules/errors/ErrorsPage";
 import { Logout, AuthPage, useAuth } from "../modules/auth";
 import { App } from "../App";
+import RoleProvider from "../pages/admin/adminUsers/RoleProvider";
 
 const { BASE_URL } = import.meta.env;
 
@@ -54,7 +55,9 @@ const AppRoutes: FC = () => {
           <Route path="logout" element={<Logout />} />
           {token ? (
             <>
-              <Route path="/*" element={<PrivateRoutes />} />
+              <Route path="/*" element={<RoleProvider token={token}>
+                <PrivateRoutes />
+              </RoleProvider>} />
               <Route index element={<Navigate to="/dashboard" />} />
             </>
           ) : (
